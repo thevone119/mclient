@@ -78,8 +78,8 @@ namespace Client.MirGraphics
 
         public static readonly MLibrary[] CArmours = new MLibrary[42],
                                           CWeapons = new MLibrary[55],
-										  CWeaponEffect = new MLibrary[67],
-										  CHair = new MLibrary[9],
+                                          CWeaponEffect = new MLibrary[67],
+                                          CHair = new MLibrary[9],
                                           CHumEffect = new MLibrary[6],
                                           AArmours = new MLibrary[17],
                                           AWeaponsL = new MLibrary[14],
@@ -115,10 +115,10 @@ namespace Client.MirGraphics
             for (int i = 0; i < CWeapons.Length; i++)
                 CWeapons[i] = new MLibrary(Settings.CWeaponPath + i.ToString("00"));
 
-			for (int i = 0; i < CWeaponEffect.Length; i++)
-				CWeaponEffect[i] = new MLibrary(Settings.CWeaponEffectPath + i.ToString("00"));
+            for (int i = 0; i < CWeaponEffect.Length; i++)
+                CWeaponEffect[i] = new MLibrary(Settings.CWeaponEffectPath + i.ToString("00"));
 
-			for (int i = 0; i < CHumEffect.Length; i++)
+            for (int i = 0; i < CHumEffect.Length; i++)
                 CHumEffect[i] = new MLibrary(Settings.CHumEffectPath + i.ToString("00"));
 
             //Assassin
@@ -214,25 +214,25 @@ namespace Client.MirGraphics
             }
             MapLibs[190] = new MLibrary(Settings.DataPath + "Map\\ShandaMir2\\AniTiles1");
             //wemade mir3 (allowed from 200-299)
-            string[] Mapstate = { "", "wood\\", "sand\\", "snow\\", "forest\\"};
+            string[] Mapstate = { "", "wood\\", "sand\\", "snow\\", "forest\\" };
             for (int i = 0; i < Mapstate.Length; i++)
             {
-                MapLibs[200 +(i*15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Tilesc");
-                MapLibs[201 +(i*15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Tiles30c");
-                MapLibs[202 +(i*15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Tiles5c");
-                MapLibs[203 +(i*15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Smtilesc");
-                MapLibs[204 +(i*15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Housesc");
-                MapLibs[205 +(i*15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Cliffsc");
-                MapLibs[206 +(i*15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Dungeonsc");
-                MapLibs[207 +(i*15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Innersc");
-                MapLibs[208 +(i*15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Furnituresc");
-                MapLibs[209 +(i*15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Wallsc");
-                MapLibs[210 +(i*15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "smObjectsc");
-                MapLibs[211 +(i*15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Animationsc");
-                MapLibs[212 +(i*15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Object1c");
+                MapLibs[200 + (i * 15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Tilesc");
+                MapLibs[201 + (i * 15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Tiles30c");
+                MapLibs[202 + (i * 15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Tiles5c");
+                MapLibs[203 + (i * 15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Smtilesc");
+                MapLibs[204 + (i * 15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Housesc");
+                MapLibs[205 + (i * 15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Cliffsc");
+                MapLibs[206 + (i * 15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Dungeonsc");
+                MapLibs[207 + (i * 15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Innersc");
+                MapLibs[208 + (i * 15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Furnituresc");
+                MapLibs[209 + (i * 15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Wallsc");
+                MapLibs[210 + (i * 15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "smObjectsc");
+                MapLibs[211 + (i * 15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Animationsc");
+                MapLibs[212 + (i * 15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Object1c");
                 MapLibs[213 + (i * 15)] = new MLibrary(Settings.DataPath + "Map\\WemadeMir3\\" + Mapstate[i] + "Object2c");
             }
-            Mapstate = new string[] { "", "wood", "sand", "snow", "forest"};
+            Mapstate = new string[] { "", "wood", "sand", "snow", "forest" };
             //shanda mir3 (allowed from 300-399)
             for (int i = 0; i < Mapstate.Length; i++)
             {
@@ -377,13 +377,13 @@ namespace Client.MirGraphics
                 Progress++;
             }
 
-			for (int i = 0; i < CWeaponEffect.Length; i++)
-			{
-				CWeaponEffect[i].Initialize();
-				Progress++;
-			}
+            for (int i = 0; i < CWeaponEffect.Length; i++)
+            {
+                CWeaponEffect[i].Initialize();
+                Progress++;
+            }
 
-			for (int i = 0; i < AArmours.Length; i++)
+            for (int i = 0; i < AArmours.Length; i++)
             {
                 AArmours[i].Initialize();
                 Progress++;
@@ -491,7 +491,7 @@ namespace Client.MirGraphics
                 TransformMounts[i].Initialize();
                 Progress++;
             }
-            
+
             Loaded = true;
         }
 
@@ -538,7 +538,7 @@ namespace Client.MirGraphics
             {
                 return;
             }
-            
+
             fidxName = Path.ChangeExtension(fileName, "Wix");
             //判断文件类型
             switch (Path.GetExtension(fileName).ToLower())
@@ -650,7 +650,7 @@ namespace Client.MirGraphics
             if (!_initialized)
                 Initialize();
 
-            if (_count<=0||_images == null || index < 0 || index >= _images.Length)
+            if (_count <= 0 || _images == null || index < 0 || index >= _images.Length)
                 return false;
 
 
@@ -671,7 +671,7 @@ namespace Client.MirGraphics
             return true;
         }
 
-        public  Point GetOffSet(int index)
+        public Point GetOffSet(int index)
         {
             if (!_initialized) Initialize();
 
@@ -686,7 +686,7 @@ namespace Client.MirGraphics
 
             return new Point(_images[index].X, _images[index].Y);
         }
-        public  Size GetSize(int index)
+        public Size GetSize(int index)
         {
             if (!_initialized) Initialize();
             if (_images == null || index < 0 || index >= _images.Length)
@@ -699,7 +699,7 @@ namespace Client.MirGraphics
             }
             return new Size(_images[index].Width, _images[index].Height);
         }
-        public  Size GetTrueSize(int index)
+        public Size GetTrueSize(int index)
         {
             if (!_initialized)
                 Initialize();
@@ -720,7 +720,7 @@ namespace Client.MirGraphics
                     if ((mi.Width == 0) || (mi.Height == 0))
                         return Size.Empty;
 
-                    _fStream.Seek(_indexList[index] + 17, SeekOrigin.Begin);
+                    _fStream.Seek(_indexList[index] + (_nType > 0 ? ImageStructureSize[_nType] : _version == 0 ? 8 : 12), SeekOrigin.Begin);
                     mi.CreateTexture(_reader, _palette);
                 }
                 return mi.GetTrueSize();
@@ -728,7 +728,7 @@ namespace Client.MirGraphics
             return mi.TrueSize;
         }
 
-        public  void Draw(int index, int x, int y)
+        public void Draw(int index, int x, int y)
         {
             if (x >= Settings.ScreenWidth || y >= Settings.ScreenHeight)
                 return;
@@ -745,7 +745,7 @@ namespace Client.MirGraphics
             DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, new PointF(x, y), Color.White);
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
-        public  void Draw(int index, Point point, Color colour, bool offSet = false)
+        public void Draw(int index, Point point, Color colour, bool offSet = false)
         {
             if (!CheckImage(index))
                 return;
@@ -764,7 +764,7 @@ namespace Client.MirGraphics
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
 
-        public  void Draw(int index, Point point, Color colour, bool offSet, float opacity)
+        public void Draw(int index, Point point, Color colour, bool offSet, float opacity)
         {
             if (!CheckImage(index))
                 return;
@@ -784,7 +784,7 @@ namespace Client.MirGraphics
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
 
-        public  void DrawBlend(int index, Point point, Color colour, bool offSet = false, float rate = 1)
+        public void DrawBlend(int index, Point point, Color colour, bool offSet = false, float rate = 1)
         {
             if (!CheckImage(index))
                 return;
@@ -804,7 +804,7 @@ namespace Client.MirGraphics
             DXManager.SetBlend(oldBlend);
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
-        public  void Draw(int index, Rectangle section, Point point, Color colour, bool offSet)
+        public void Draw(int index, Rectangle section, Point point, Color colour, bool offSet)
         {
             if (!CheckImage(index))
                 return;
@@ -826,7 +826,7 @@ namespace Client.MirGraphics
             DXManager.Sprite.Draw2D(mi.Image, section, section.Size, point, colour);
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
-        public  void Draw(int index, Rectangle section, Point point, Color colour, float opacity)
+        public void Draw(int index, Rectangle section, Point point, Color colour, float opacity)
         {
             if (!CheckImage(index))
                 return;
@@ -851,7 +851,7 @@ namespace Client.MirGraphics
             DXManager.SetOpacity(oldOpacity);
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
-        public  void Draw(int index, Point point, Size size, Color colour)
+        public void Draw(int index, Point point, Size size, Color colour)
         {
             if (!CheckImage(index))
                 return;
@@ -865,7 +865,7 @@ namespace Client.MirGraphics
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
 
-        public  void DrawTinted(int index, Point point, Color colour, Color Tint, bool offSet = false)
+        public void DrawTinted(int index, Point point, Color colour, Color Tint, bool offSet = false)
         {
             if (!CheckImage(index))
                 return;
@@ -886,7 +886,7 @@ namespace Client.MirGraphics
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
 
-        public  void DrawUp(int index, int x, int y)
+        public void DrawUp(int index, int x, int y)
         {
             if (x >= Settings.ScreenWidth)
                 return;
@@ -905,7 +905,7 @@ namespace Client.MirGraphics
             DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, new PointF(x, y), Color.White);
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
-        public  void DrawUpBlend(int index, Point point)
+        public void DrawUpBlend(int index, Point point)
         {
             if (!CheckImage(index))
                 return;
@@ -940,7 +940,7 @@ namespace Client.MirGraphics
         //        //edit this to set how big you want the 'inaccuracy' to be (bear in mind bigger = takes more for your client to calculate)
         //        //dont make it higher then 6 tho (or add more value sin realranges)
         //        int range = 2;
-                
+
         //        for (int i = 0; i < (8 * realRanges[range]); i++)
         //        {
         //            targetpoint = Functions.PointMove(point, (MirDirection)(i % 8), (int)(i/8));
@@ -951,7 +951,7 @@ namespace Client.MirGraphics
         //    return output;
         //}
 
-        public  bool VisiblePixel(int index, Point point, bool accuate)
+        public bool VisiblePixel(int index, Point point, bool accuate)
         {
             if (!CheckImage(index))
                 return false;
@@ -974,17 +974,17 @@ namespace Client.MirGraphics
 
 
     //加载图像
-    public  class MImage
+    public class MImage
     {
         public short Width, Height, X, Y, ShadowX, ShadowY;
         public byte Shadow;
         //图像的长度，一般是宽*高
         public int Length;
-
+        //是否已经创建了纹理，其实就是否已经读取了图像。
         public bool TextureValid;
         public Texture Image;
 
- 
+
         //layer 2:
         public short MaskWidth, MaskHeight, MaskX, MaskY;
         public int MaskLength;
@@ -1000,7 +1000,7 @@ namespace Client.MirGraphics
         //是否16位
         public bool bo16bit = false;
         public byte nType = 0;//0 = .wil //1 = .wzl //2 = .wil new wemade design //3 = .wil mir3 //4 = .miz shanda mir3
-       
+
 
         //16位色转成32位色？
         private int convert16bitTo32bit(int color)
@@ -1133,9 +1133,9 @@ namespace Client.MirGraphics
             }
             Width = (Length == 0) ? (short)0 : Width; //this makes sure blank images aren't being processed
 
-            
+
         }
-        
+
         //创建纹理，这个才是真正的读取图片信息,作废
         private unsafe void CreateTexture(BinaryReader reader)
         {
@@ -1324,7 +1324,7 @@ namespace Client.MirGraphics
                 stream.Dispose();
                 MaskImage.UnlockRectangle(0);
             }
-            
+
             //把纹理加入到全局DX
             DXManager.TextureList.Add(this);
             TextureValid = true;
@@ -1353,9 +1353,9 @@ namespace Client.MirGraphics
             {
                 int x = p.X;
                 int y = p.Y;
-                
+
                 int index = (y * (w << 2)) + (x << 2);
-                
+
                 byte col = Data[index];
 
                 if (col == 0) return false;
@@ -1363,8 +1363,8 @@ namespace Client.MirGraphics
             }
             return result;
         }
-       
-        
+
+
         /// <summary>
         /// 真实的大小，去掉边缘？
         /// </summary>
@@ -1447,7 +1447,7 @@ namespace Client.MirGraphics
 
             return TrueSize;
         }
-       
+
         //图像解压
         private static byte[] DecompressImage(byte[] image)
         {

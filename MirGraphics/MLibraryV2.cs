@@ -477,23 +477,6 @@ namespace Client.MirGraphics
 
     }
 
-    //重载MLibrary，覆盖其方法，替换掉资源读取
-    public class MLibraryV2: MLibrary
-    {
-        private MirLibrary lib;
-        public MLibraryV2(string filename) : base(filename)
-        {
-            lib = new MirLibrary(filename);
-        }
-
-        public void Initialize()
-        {
-
-        }
-
-
-    }
-
 
     //传奇资源的加载器
     public class MirLibrary
