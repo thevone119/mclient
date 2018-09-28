@@ -25,52 +25,51 @@ namespace Client.MirControls
 
             Index = 360;
             Library = Libraries.Prguse;
-            
-            MirLog.debug("UseOffSet:" + this.UseOffSet);
+
             Location = new Point((Settings.ScreenWidth - Size.Width) / 2, (Settings.ScreenHeight - Size.Height) / 2);
 
 
             Label = new MirLabel
             {
                 AutoSize = false,
-               // DrawFormat = StringFormatFlags.FitBlackBox,
+                // DrawFormat = StringFormatFlags.FitBlackBox,
                 Location = new Point(35, 35),
                 Size = new Size(390, 110),
                 Parent = this,
                 Text = message
             };
 
-            
+
             switch (Buttons)
             {
                 case MirMessageBoxButtons.OK:
                     OKButton = new MirButton
                     {
-                        HoverIndex = 363,
-                        Index = 361,
-                        Library = Libraries.Prguse,
+                        HoverIndex = 201,
+                        Index = 200,
+                        Library = Libraries.Title,
                         Location = new Point(360, 157),
                         Parent = this,
-                        PressedIndex = 364,
+                        PressedIndex = 202,
                     };
                     OKButton.Click += (o, e) => Dispose();
                     break;
                 case MirMessageBoxButtons.OKCancel:
                     OKButton = new MirButton
                     {
-                        HoverIndex = 363,
-                        Index = 361,
-                        Library = Libraries.Prguse,
+                        HoverIndex = 201,
+                        Index = 200,
+                        Library = Libraries.Title,
                         Location = new Point(260, 157),
                         Parent = this,
-                        PressedIndex = 364,
+                        PressedIndex = 202,
                     };
                     OKButton.Click += (o, e) => Dispose();
                     CancelButton = new MirButton
                     {
                         HoverIndex = 204,
                         Index = 203,
-                        Library = Libraries.Prguse,
+                        Library = Libraries.Title,
                         Location = new Point(360, 157),
                         Parent = this,
                         PressedIndex = 205,
@@ -80,19 +79,19 @@ namespace Client.MirControls
                 case MirMessageBoxButtons.YesNo:
                     YesButton = new MirButton
                     {
-                        HoverIndex = 363,
-                        Index = 361,
-                        Library = Libraries.Prguse,
+                        HoverIndex = 207,
+                        Index = 206,
+                        Library = Libraries.Title,
                         Location = new Point(260, 157),
                         Parent = this,
-                        PressedIndex = 364,
+                        PressedIndex = 208,
                     };
                     YesButton.Click += (o, e) => Dispose();
                     NoButton = new MirButton
                     {
                         HoverIndex = 211,
                         Index = 210,
-                        Library = Libraries.Prguse,
+                        Library = Libraries.Title,
                         Location = new Point(360, 157),
                         Parent = this,
                         PressedIndex = 212,
@@ -102,19 +101,19 @@ namespace Client.MirControls
                 case MirMessageBoxButtons.YesNoCancel:
                     YesButton = new MirButton
                     {
-                        HoverIndex = 363,
-                        Index = 361,
-                        Library = Libraries.Prguse,
+                        HoverIndex = 207,
+                        Index = 206,
+                        Library = Libraries.Title,
                         Location = new Point(160, 157),
                         Parent = this,
-                        PressedIndex = 364,
+                        PressedIndex = 208,
                     };
                     YesButton.Click += (o, e) => Dispose();
                     NoButton = new MirButton
                     {
                         HoverIndex = 211,
                         Index = 210,
-                        Library = Libraries.Prguse,
+                        Library = Libraries.Title,
                         Location = new Point(260, 157),
                         Parent = this,
                         PressedIndex = 212,
@@ -124,7 +123,7 @@ namespace Client.MirControls
                     {
                         HoverIndex = 204,
                         Index = 203,
-                        Library = Libraries.Prguse,
+                        Library = Libraries.Title,
                         Location = new Point(360, 157),
                         Parent = this,
                         PressedIndex = 205,
@@ -134,12 +133,12 @@ namespace Client.MirControls
                 case MirMessageBoxButtons.Cancel:
                     CancelButton = new MirButton
                     {
-                        HoverIndex = 367,
-                        Index = 365,
-                        Library = Libraries.Prguse,
-                        Location = new Point(300, 157),
+                        HoverIndex = 204,
+                        Index = 203,
+                        Library = Libraries.Title,
+                        Location = new Point(360, 157),
                         Parent = this,
-                        PressedIndex = 368,
+                        PressedIndex = 205,
                     };
                     CancelButton.Click += (o, e) => Dispose();
                     break;
@@ -249,9 +248,9 @@ namespace Client.MirControls
 
             for (int i = 0; i < Program.Form.Controls.Count; i++)
             {
-                TextBox T = (TextBox) Program.Form.Controls[i];
+                TextBox T = (TextBox)Program.Form.Controls[i];
                 if (T != null && T.Tag != null)
-                    ((MirTextBox) T.Tag).DialogChanged();
+                    ((MirTextBox)T.Tag).DialogChanged();
             }
         }
 

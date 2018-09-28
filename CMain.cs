@@ -27,10 +27,11 @@ namespace Client
     /// </summary>
     public partial class CMain : Form
     {
+        //dubug提醒，鼠标提示
         public static MirControl DebugBaseLabel, HintBaseLabel;
         public static MirLabel DebugTextLabel, HintTextLabel, ScreenshotTextLabel;
         public static Graphics Graphics;
-        //这个是什么点哦？地图中心点么？
+        //这个是什么点哦？地图中心点么？应该是当前的鼠标坐标点
         public static Point MPoint;
         //计算系统运行的总时间
         public readonly static Stopwatch Timer = Stopwatch.StartNew();
@@ -55,9 +56,8 @@ namespace Client
         public CMain()
         {
             InitializeComponent();
-
+            //主窗体的所有事件，传播到子控件
             Application.Idle += Application_Idle;
-
             MouseClick += CMain_MouseClick;
             MouseDown += CMain_MouseDown;
             MouseUp += CMain_MouseUp;
@@ -71,7 +71,7 @@ namespace Client
 
 
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.Selectable, true);
-            FormBorderStyle = Settings.FullScreen ? FormBorderStyle.None : FormBorderStyle.FixedSingle;
+            FormBorderStyle = Settings.FullScreen ? FormBorderStyle.None : FormBorderStyle.FixedDialog;
 
             Graphics = CreateGraphics();
             Graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -80,6 +80,28 @@ namespace Client
             Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
             Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
             Graphics.TextContrast = 0;
+
+            //这句话会卡屏？神经咯。
+            //this.ControlBox = true;
+            
+        }
+
+        //.net 提供了ProcessCmdKey 重新实现Form的键盘消息,这个针对F10进行特殊处理，避免卡屏
+        protected override bool ProcessCmdKey(ref System.Windows.Forms.Message msg, System.Windows.Forms.Keys keyData)
+        {
+            int WM_KEYDOWN = 256;
+            int WM_SYSKEYDOWN = 260;
+            if (msg.Msg == WM_KEYDOWN | msg.Msg == WM_SYSKEYDOWN)
+            {
+                //F10键自定义处理，不经过系统
+                if (keyData == Keys.F10)
+                {
+                    MirScene.ActiveScene.OnKeyDown(new KeyEventArgs(keyData));
+                    return true;
+                }
+                //屏蔽win键
+            }
+            return false;
         }
 
         private void CMain_Load(object sender, EventArgs e)
@@ -112,16 +134,16 @@ namespace Client
                     UpdateTime();
                     //更新系统，更新画面，每秒更新一次，同时计算帧数
                     UpdateEnviroment();
+                    //重置环境，重画，拼命重画
                     RenderEnvironment();
                 }
-
             }
             catch (Exception ex)
             {
                 SaveError(ex.ToString());
             }
         }
-
+        //失去焦点时
         private static void CMain_Deactivate(object sender, EventArgs e)
         {
             MapControl.MapButtons = MouseButtons.None;
@@ -130,7 +152,13 @@ namespace Client
             Ctrl = false;
             Tilde = false;
         }
+        //获取当前有效的按键
+        public static KeyBind GetKeyBind(Keys k)
+        {
+            return CMain.InputKeys.GetKeyBind(Shift, Alt, Ctrl, Tilde, k);
+        }
 
+        //按键时
         public static void CMain_KeyDown(object sender, KeyEventArgs e)
         {
             Shift = e.Shift;
@@ -142,6 +170,7 @@ namespace Client
 
             try
             {
+                //切换全屏
                 if (e.Alt && e.KeyCode == Keys.Enter)
                 {
                     ToggleFullScreen();
@@ -149,7 +178,9 @@ namespace Client
                 }
 
                 if (MirScene.ActiveScene != null)
+                {
                     MirScene.ActiveScene.OnKeyDown(e);
+                }
 
             }
             catch (Exception ex)
@@ -157,23 +188,9 @@ namespace Client
                 SaveError(ex.ToString());
             }
         }
-        public static void CMain_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (Settings.FullScreen)
-                Cursor.Clip = new Rectangle(0, 0, Settings.ScreenWidth, Settings.ScreenHeight);
-
-            MPoint = Program.Form.PointToClient(Cursor.Position);
-
-            try
-            {
-                if (MirScene.ActiveScene != null)
-                    MirScene.ActiveScene.OnMouseMove(e);
-            }
-            catch (Exception ex)
-            {
-                SaveError(ex.ToString());
-            }
-        }
+       
+  
+        //按键结束
         public static void CMain_KeyUp(object sender, KeyEventArgs e)
         {
             Shift = e.Shift;
@@ -182,28 +199,19 @@ namespace Client
 
             if (e.KeyCode == Keys.Oem8)
                 CMain.Tilde = false;
-
-            foreach (KeyBind KeyCheck in CMain.InputKeys.Keylist)
+            //这个进行截屏处理？应该捕获不了这个键哦
+            KeyBind kb = GetKeyBind(e.KeyCode);
+            if(kb!=null && KeybindOptions.Screenshot == kb.function)
             {
-                if (KeyCheck.function != KeybindOptions.Screenshot) continue;
-                if (KeyCheck.Key != e.KeyCode)
-                    continue;
-                if ((KeyCheck.RequireAlt != 2) && (KeyCheck.RequireAlt != (Alt ? 1 : 0)))
-                    continue;
-                if ((KeyCheck.RequireShift != 2) && (KeyCheck.RequireShift != (Shift ? 1 : 0)))
-                    continue;
-                if ((KeyCheck.RequireCtrl != 2) && (KeyCheck.RequireCtrl != (Ctrl ? 1 : 0)))
-                    continue;
-                if ((KeyCheck.RequireTilde != 2) && (KeyCheck.RequireTilde != (Tilde ? 1 : 0)))
-                    continue;
                 Program.Form.CreateScreenShot();
-                break;
-
             }
+
             try
             {
                 if (MirScene.ActiveScene != null)
+                {
                     MirScene.ActiveScene.OnKeyUp(e);
+                }
             }
             catch (Exception ex)
             {
@@ -215,7 +223,27 @@ namespace Client
             try
             {
                 if (MirScene.ActiveScene != null)
+                {
                     MirScene.ActiveScene.OnKeyPress(e);
+                }
+            }
+            catch (Exception ex)
+            {
+                SaveError(ex.ToString());
+            }
+        }
+        public static void CMain_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (Settings.FullScreen)
+                Cursor.Clip = new Rectangle(0, 0, Settings.ScreenWidth, Settings.ScreenHeight);
+
+            //当前鼠标的坐标，在窗口内的坐标
+            MPoint = Program.Form.PointToClient(Cursor.Position);
+
+            try
+            {
+                if (MirScene.ActiveScene != null)
+                    MirScene.ActiveScene.OnMouseMove(e);
             }
             catch (Exception ex)
             {
@@ -321,20 +349,27 @@ namespace Client
                 _fps++;
             //网络数据处理
             Network.Process();
+
             //场景处理
             if (MirScene.ActiveScene != null)
                 MirScene.ActiveScene.Process();
-            
+
+       
+           
+            //动画要一直更新么
             for (int i = 0; i < MirAnimatedControl.Animations.Count; i++)
                 MirAnimatedControl.Animations[i].UpdateOffSet();
 
             for (int i = 0; i < MirAnimatedButton.Animations.Count; i++)
                 MirAnimatedButton.Animations[i].UpdateOffSet();
 
+            //这个是鼠标移动到物体，菜单上显示的提示信息
             CreateHintLabel();
+            //FPS等信息输出
             CreateDebugLabel();
- 
         }
+
+        //循环执行，重置DX环境,重画？
         private static void RenderEnvironment()
         {
             try
@@ -371,9 +406,10 @@ namespace Client
             }
         }
 
+        //这个是输出FPS等信息的，在左上角输出，这个和技能栏重复了。要调整下
         private static void CreateDebugLabel()
         {
-            if (!Settings.DebugMode) return;
+            //if (!Settings.DebugMode) return;
 
             if (DebugBaseLabel == null || DebugBaseLabel.IsDisposed)
             {
@@ -516,6 +552,7 @@ namespace Client
             HintBaseLabel.Location = point;
         }
 
+        //是否全屏的处理
         private static void ToggleFullScreen()
         {
             Settings.FullScreen = !Settings.FullScreen;
@@ -527,14 +564,15 @@ namespace Client
             Program.Form.ClientSize = new Size(Settings.ScreenWidth, Settings.ScreenHeight);
         }
 
+        //截屏处理？
         public void CreateScreenShot()
         {
             Point location = PointToClient(Location);
 
             location = new Point(-location.X, -location.Y);
 
-            string text = string.Format("[{0} Server {1}] {2} {3:hh\\:mm\\:ss}", 
-                Settings.P_ServerName.Length > 0 ? Settings.P_ServerName : "Crystal", 
+            string text = string.Format("[{0}  {1}] {2} {3:hh\\:mm\\:ss}", 
+                Settings.P_ServerName.Length > 0 ? Settings.P_ServerName : "热血传奇", 
                 MapControl.User != null ? MapControl.User.Name : "", 
                 Now.ToShortDateString(), 
                 Now.TimeOfDay);

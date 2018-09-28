@@ -14,24 +14,16 @@ namespace Client.MirSounds
 
         private MemoryStream _mStream;
         private bool _loop;
+        //加多一个文件名的参数，方便调试
+        public string fname;
 
         public SoundLibrary(int index, string fileName, bool loop)
         {
             Index = index;
-            if (fileName.IndexOf(@"wav\") != -1)
-            {
-                //fileName = Path.Combine(Settings.SoundPath, fileName);
-            }
-            else
-            {
-                fileName = Path.Combine(Settings.SoundPath, fileName);
-            }
-           
-     
-            MirLog.debug("SoundLibrary:" + fileName);
-
+            fname = fileName;
+            fileName = Path.Combine(Settings.SoundPath, fileName);
             if (!File.Exists(fileName)) return;
-            
+
             _mStream = new MemoryStream(File.ReadAllBytes(fileName));
 
             _loop = loop;
@@ -103,8 +95,8 @@ namespace Client.MirSounds
             _mStream = null;
 
             if (_bufferList != null)
-            for (int i = 0; i < _bufferList.Count; i++)
-                _bufferList[i].Dispose();
+                for (int i = 0; i < _bufferList.Count; i++)
+                    _bufferList[i].Dispose();
             _bufferList = null;
 
             _loop = false;

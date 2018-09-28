@@ -4,7 +4,62 @@ using Client.MirSounds;
 using System.Windows.Forms;
 using System.Collections.Generic;
 
+/// <summary>
+/// 
+/// 
+/// 
+/// 
+/// 
+/// （一）键事件按下列顺序发生： 
+/**
+KeyDown
 
+KeyPress
+
+KeyUp
+
+ （二）KeyDown触发后，不一定触发KeyUp，当KeyDown 按下后，拖动鼠标，那么将不会触发KeyUp事件。
+
+ （三）定义
+
+KeyDown：在控件有焦点的情况下按下键时发生。
+
+KeyPress：在控件有焦点的情况下按下键时发生。(下面会说和KeyDown 的区别)
+
+KeyUp：在控件有焦点的情况下释放键时发生。
+
+ （四）KeyPress 和KeyDown 、KeyPress之间的区别
+
+          1.KeyPress主要用来捕获数字(注意：包括Shift+数字的符号)、字母（注意：包括大小写）、小键盘等除了F1-12、SHIFT、Alt、Ctrl、Insert、Home、PgUp、Delete、End、PgDn、ScrollLock、Pause、NumLock、{菜单键}、{开始键}和方向键外的ANSI字符 KeyDown 和KeyUp 通常可以捕获键盘除了PrScrn所有按键(这里不讨论特殊键盘的特殊键）
+
+           2.KeyPress 只能捕获单个字符
+
+
+  KeyDown 和KeyUp 可以捕获组合键。
+
+          3.KeyPress 可以捕获单个字符的大小写
+
+          4.KeyDown和KeyUp 对于单个字符捕获的KeyValue 都是一个值，也就是不能判断单个字符的大小写。
+
+          5.KeyPress 不区分小键盘和主键盘的数字字符。
+
+
+  KeyDown 和KeyUp 区分小键盘和主键盘的数字字符。
+
+          6.其中PrScrn 按键KeyPress、KeyDown和KeyUp 都不能捕获。
+
+ （五）系统组合键的判定
+
+在使用键盘的时候，通常会使用到CTRL+SHIFT+ALT 类似的组合键功能。对于此，我们如何来判定？
+
+通过KeyUp 事件能够来处理（这里说明一下为什么不用KeyDown，因为在判定KeyDown的时候，CTRL、SHIFT和ALT 属于一直按下状态，然后再加另外一个键是不能准确捕获组合键，所以使用KeyDown 是不能准确判断出的，要通过KeyUp 事件来判定 ）
+*/
+/// 
+/// 
+/// 
+/// 
+/// 
+/// </summary>
 namespace Client
 {
 
@@ -91,10 +146,10 @@ namespace Client
         Ranking,
         AddGroupMember
     }
-
+    //自定义键，0：没有按住。1：必须按住，2：按不按都可以
     public class KeyBind
     {
-        public KeybindOptions function = KeybindOptions.Bar1Skill1;
+        public KeybindOptions function = KeybindOptions.Bar1Skill1;//捆绑的事件
         public byte RequireCtrl = 0; //so these requirexxx: 0 < only works if you DONT hold the key, 1 < only works if you HOLD the key, 2 < works REGARDLESSS of the key
         public byte RequireShift = 0;
         public byte RequireAlt = 0;
@@ -102,11 +157,14 @@ namespace Client
         public Keys Key = 0;
     }
 
-
+    //按键设置，这个后面要改下，改成保存到角色下？
     public class KeyBindSettings
     {
         private static InIReader Reader = new InIReader(@".\KeyBinds.ini");
         public List<KeyBind> Keylist = new List<KeyBind>();
+        private Dictionary<KeybindOptions, KeyBind> funcdict = new Dictionary<KeybindOptions, KeyBind>();
+        private Dictionary<Keys, KeyBind> keydict = new Dictionary<Keys, KeyBind>();
+
         public KeyBindSettings()
         {
             New();
@@ -116,6 +174,17 @@ namespace Client
                 return;
             }
             Load();
+            for (int i = 0; i < Keylist.Count; i++)
+            {
+                if (!funcdict.ContainsKey(Keylist[i].function))
+                {
+                    funcdict.Add(Keylist[i].function, Keylist[i]);
+                }
+                if (!keydict.ContainsKey(Keylist[i].Key))
+                {
+                    keydict.Add(Keylist[i].Key, Keylist[i]);
+                }
+            }
         }
 
         public void Load()
@@ -320,29 +389,98 @@ namespace Client
             InputKey = new KeyBind { function = KeybindOptions.AddGroupMember, RequireAlt = 2, RequireShift = 2, RequireTilde = 2, RequireCtrl = 1, Key = Keys.G };
             Keylist.Add(InputKey);
         }
+
         public string GetKey(KeybindOptions Option)
         {
             string output = "";
-            for (int i = 0; i < Keylist.Count; i++ )
+            if (!funcdict.ContainsKey(Option))
             {
-                if (Keylist[i].function == Option)
-                {
-                    if (CMain.InputKeys.Keylist[i].Key == Keys.None) return output;
-                    if (CMain.InputKeys.Keylist[i].RequireAlt == 1)
-                        output = "Alt";
-                    if (CMain.InputKeys.Keylist[i].RequireCtrl == 1)
-                        output = output != "" ? output + "\nCtrl" : "Ctrl";
-                    if (CMain.InputKeys.Keylist[i].RequireShift == 1)
-                        output = output != "" ? output + "\nShift" : "Shift";
-                    if (CMain.InputKeys.Keylist[i].RequireTilde == 1)
-                        output = output != "" ? output + "\n~" : "~";
-
-                    output = output != "" ? output + "\n" + CMain.InputKeys.Keylist[i].Key.ToString() : CMain.InputKeys.Keylist[i].Key.ToString();
-                    return output;
-                }
+                return output;
             }
+            KeyBind kb = funcdict[Option];
+            if (kb != null)
+            {
+                if (kb.Key == Keys.None) return output;
+                if (kb.RequireAlt == 1)
+                    output = "Alt";
+                if (kb.RequireCtrl == 1)
+                    output = output != "" ? output + "\nCtrl" : "Ctrl";
+                if (kb.RequireShift == 1)
+                    output = output != "" ? output + "\nShift" : "Shift";
+                if (kb.RequireTilde == 1)
+                    output = output != "" ? output + "\n~" : "~";
+
+                output = output != "" ? output + "\n" + kb.Key.ToString() : kb.Key.ToString();
+                return output;
+            }
+           
             return "";
         }
+
+        //通过fun查询绑定
+        public KeyBind GetKeyBindByFun(KeybindOptions Option)
+        {
+            if (!funcdict.ContainsKey(Option))
+            {
+                return null;
+            }
+            return funcdict[Option];
+        }
+        //通过key查询绑定
+        public KeyBind GetKeyBindByKey(Keys key)
+        {
+            if (!keydict.ContainsKey(key))
+            {
+                return null;
+            }
+            return keydict[key];
+        }
+
+        //通过组合参数查询key
+        public KeyBind GetKeyBind(bool Shift, bool Alt, bool Ctrl, bool Tilde, Keys key)
+        {
+            if (key == Keys.None) return null;
+            if (!keydict.ContainsKey(key))
+            {
+                return null;
+            }
+            //自定义键，0：没有按住。1：必须按住，2：按不按都可以
+            KeyBind kb = keydict[key];
+            if (kb == null)
+            {
+                return null;
+            }
+            if (Shift)
+            {
+                if (kb.RequireShift != 1)
+                {
+                    return null;
+                }
+            }
+            if (Alt)
+            {
+                if (kb.RequireAlt != 1)
+                {
+                    return null;
+                }
+            }
+            if (Ctrl)
+            {
+                if (kb.RequireCtrl != 1)
+                {
+                    return null;
+                }
+            }
+            if (Tilde)
+            {
+                if (kb.RequireTilde != 1)
+                {
+                    return null;
+                }
+            }
+            return kb;
+        }
+
     }
 
     

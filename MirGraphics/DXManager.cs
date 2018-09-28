@@ -41,6 +41,7 @@ namespace Client.MirGraphics
 
 
         public static Texture RadarTexture;
+        //这个是灯光
         public static List<Texture> Lights = new List<Texture>();
         public static Texture PoisonDotBackground;
         //定义4个着色器，灰度，正常，魔法，阴影
@@ -78,7 +79,11 @@ namespace Client.MirGraphics
                 PresentationInterval = Settings.FPSCap ? PresentInterval.One : PresentInterval.Immediate,
                 Windowed = !Settings.FullScreen,
             };
+            //设置如何从后台缓冲区复制到前台缓冲区(SwapEffect.Discard表示缓冲区在显示后立即被舍弃,这样可以节省开销)
+            //Parameters.SwapEffect = SwapEffect.Discard;
 
+            //设置屏幕显示模式为窗口模式
+            //Parameters.Windowed = false;
 
             Caps devCaps = Manager.GetDeviceCaps(0, DeviceType.Hardware);
             DeviceType devType = DeviceType.Reference;
@@ -122,8 +127,10 @@ namespace Client.MirGraphics
             }
             if (System.IO.File.Exists(shaderGrayScalePath))
             {
+                MirLog.debug("grayscale.ps");
                 using (var gs = ShaderLoader.FromFile(shaderGrayScalePath, null, ShaderFlags.None))
                     GrayScalePixelShader = new PixelShader(Device, gs);
+               
             }
             if (System.IO.File.Exists(shaderMagicPath))
             {
@@ -167,6 +174,12 @@ namespace Client.MirGraphics
         //创建灯光
         private unsafe static void CreateLights()
         {
+            //用下面几行代码把这个灯光去掉
+            Lights.Clear();
+            if (Lights.Count == 0)
+            {
+                return;
+            }
 
             for (int i = Lights.Count - 1; i >= 0; i--)
                 Lights[i].Dispose();
@@ -308,6 +321,7 @@ namespace Client.MirGraphics
             {
             }
         }
+        //设置透明度
         public static void SetOpacity(float opacity)
         {
             if (Opacity == opacity)
@@ -333,6 +347,7 @@ namespace Client.MirGraphics
             Opacity = opacity;
             Sprite.Flush();
         }
+        //混合模式
         public static void SetBlend(bool value, float rate = 1F, BlendMode mode = BlendMode.NORMAL)
         {
             if (value == Blending && BlendingRate == rate && BlendingMode == mode) return;
@@ -427,7 +442,6 @@ namespace Client.MirGraphics
                 if (m.Image != null && !m.Image.Disposed)
                 {
                     m.Image.Dispose();
-                    m.Image = null;
                 }
             }
 
@@ -457,7 +471,6 @@ namespace Client.MirGraphics
                 if (m.Image != null && !m.Image.Disposed)
                 {
                     m.Image.Dispose();
-                    m.Image = null;
                 }
             }
             TextureList.Clear();

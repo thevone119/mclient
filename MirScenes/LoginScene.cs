@@ -29,14 +29,14 @@ namespace Client.MirScenes
 
         private InputKeyDialog _ViewKey;
 
-        public MirImageControl TestLabel, ViolenceLabel, MinorLabel, YouthLabel; 
+        public MirImageControl TestLabel, ViolenceLabel, MinorLabel, YouthLabel;
 
         public LoginScene()
         {
 
             SoundManager.PlaySound(SoundList.IntroMusic, true);
             Disposing += (o, e) => SoundManager.StopSound(SoundList.IntroMusic);
-            //背景
+
             _background = new MirAnimatedControl
             {
                 Animated = false,
@@ -48,21 +48,21 @@ namespace Client.MirScenes
                 Parent = this,
             };
 
-            _login = new LoginDialog {Parent = _background, Visible = false};
+            _login = new LoginDialog { Parent = _background, Visible = false };
             _login.AccountButton.Click += (o, e) =>
-                {
-                    _login.Hide();
-                    if(_ViewKey != null && !_ViewKey.IsDisposed) _ViewKey.Dispose();
-                    _account = new NewAccountDialog { Parent = _background };
-                    _account.Disposing += (o1, e1) => _login.Show();
-                };
+            {
+                _login.Hide();
+                if (_ViewKey != null && !_ViewKey.IsDisposed) _ViewKey.Dispose();
+                _account = new NewAccountDialog { Parent = _background };
+                _account.Disposing += (o1, e1) => _login.Show();
+            };
             _login.PassButton.Click += (o, e) =>
-                {
-                    _login.Hide();
-                    if (_ViewKey != null && !_ViewKey.IsDisposed) _ViewKey.Dispose();
-                    _password = new ChangePasswordDialog { Parent = _background };
-                    _password.Disposing += (o1, e1) => _login.Show();
-                };
+            {
+                _login.Hide();
+                if (_ViewKey != null && !_ViewKey.IsDisposed) _ViewKey.Dispose();
+                _password = new ChangePasswordDialog { Parent = _background };
+                _password.Disposing += (o1, e1) => _login.Show();
+            };
 
             _login.ViewKeyButton.Click += (o, e) =>     //ADD
             {
@@ -72,16 +72,15 @@ namespace Client.MirScenes
             };
 
             Version = new MirLabel
-                {
-                    AutoSize = true,
-                    BackColour = Color.FromArgb(200, 50, 50, 50),
-                    Border = true,
-                    Visible=false,//不显示客户端版本
-                    BorderColour = Color.Black,
-                    Location = new Point(5, 580),
-                    Parent = _background,
-                    Text = string.Format("Version: {0}", Application.ProductVersion),
-                };
+            {
+                AutoSize = true,
+                BackColour = Color.FromArgb(200, 50, 50, 50),
+                Border = true,
+                BorderColour = Color.Black,
+                Location = new Point(5, 580),
+                Parent = _background,
+                Text = string.Format("Version: {0}", Application.ProductVersion),
+            };
 
             TestLabel = new MirImageControl
             {
@@ -119,10 +118,10 @@ namespace Client.MirScenes
             _connectBox = new MirMessageBox("Attempting to connect to the server.", MirMessageBoxButtons.Cancel);
             _connectBox.CancelButton.Click += (o, e) => Program.Form.Close();
             Shown += (sender, args) =>
-                {
-                    Network.Connect();
-                    _connectBox.Show();
-                };
+            {
+                Network.Connect();
+                _connectBox.Show();
+            };
         }
 
         public override void Process()
@@ -139,25 +138,25 @@ namespace Client.MirScenes
                     SendVersion();
                     break;
                 case (short)ServerPacketIds.ClientVersion:
-                    ClientVersion((S.ClientVersion) p);
+                    ClientVersion((S.ClientVersion)p);
                     break;
                 case (short)ServerPacketIds.NewAccount:
-                    NewAccount((S.NewAccount) p);
+                    NewAccount((S.NewAccount)p);
                     break;
                 case (short)ServerPacketIds.ChangePassword:
-                    ChangePassword((S.ChangePassword) p);
+                    ChangePassword((S.ChangePassword)p);
                     break;
                 case (short)ServerPacketIds.ChangePasswordBanned:
-                    ChangePassword((S.ChangePasswordBanned) p);
+                    ChangePassword((S.ChangePasswordBanned)p);
                     break;
                 case (short)ServerPacketIds.Login:
-                    Login((S.Login) p);
+                    Login((S.Login)p);
                     break;
                 case (short)ServerPacketIds.LoginBanned:
-                    Login((S.LoginBanned) p);
+                    Login((S.LoginBanned)p);
                     break;
                 case (short)ServerPacketIds.LoginSuccess:
-                    Login((S.LoginSuccess) p);
+                    Login((S.LoginSuccess)p);
                     break;
                 default:
                     base.ProcessPacket(p);
@@ -165,7 +164,7 @@ namespace Client.MirScenes
             }
         }
 
-        private  void SendVersion()
+        private void SendVersion()
         {
             _connectBox.Label.Text = "Sending Client Version.";
 
@@ -178,7 +177,7 @@ namespace Client.MirScenes
                     sum = md5.ComputeHash(stream);
 
                 p.VersionHash = sum;
-                    Network.Enqueue(p);
+                Network.Enqueue(p);
             }
             catch (Exception ex)
             {
@@ -287,7 +286,7 @@ namespace Client.MirScenes
 
             TimeSpan d = p.ExpiryDate - CMain.Now;
             MirMessageBox.Show(string.Format("This account is banned.\n\nReason: {0}\nExpiryDate: {1}\nDuration: {2:#,##0} Hours, {3} Minutes, {4} Seconds", p.Reason,
-                                             p.ExpiryDate, Math.Floor(d.TotalHours), d.Minutes, d.Seconds ));
+                                             p.ExpiryDate, Math.Floor(d.TotalHours), d.Minutes, d.Seconds));
         }
         private void Login(S.Login p)
         {
@@ -329,15 +328,15 @@ namespace Client.MirScenes
         {
             Enabled = false;
             _login.Dispose();
-            if(_ViewKey != null && !_ViewKey.IsDisposed) _ViewKey.Dispose();
+            if (_ViewKey != null && !_ViewKey.IsDisposed) _ViewKey.Dispose();
 
             SoundManager.PlaySound(SoundList.LoginEffect);
             _background.Animated = true;
             _background.AfterAnimation += (o, e) =>
-                {
-                    Dispose();
-                    ActiveScene = new SelectScene(p.Characters);
-                };
+            {
+                Dispose();
+                ActiveScene = new SelectScene(p.Characters);
+            };
         }
 
         public sealed class LoginDialog : MirImageControl
@@ -351,66 +350,66 @@ namespace Client.MirScenes
             {
                 Index = 1084;
                 Library = Libraries.Prguse;
-                Location = new Point((Settings.ScreenWidth - Size.Width)/2, (Settings.ScreenHeight - Size.Height)/2);
+                Location = new Point((Settings.ScreenWidth - Size.Width) / 2, (Settings.ScreenHeight - Size.Height) / 2);
                 PixelDetect = false;
                 Size = new Size(328, 220);
 
                 TitleLabel = new MirImageControl
-                    {
-                        Index = 30,
-                        Library = Libraries.Title,
-                        Parent = this,
-                    };
-                TitleLabel.Location = new Point((Size.Width - TitleLabel.Size.Width)/2, 12);
+                {
+                    Index = 30,
+                    Library = Libraries.Title,
+                    Parent = this,
+                };
+                TitleLabel.Location = new Point((Size.Width - TitleLabel.Size.Width) / 2, 12);
 
                 AccountIDLabel = new MirImageControl
-                    {
-                        Index = 31,
-                        Library = Libraries.Title,
-                        Parent = this,
-                        Location = new Point(52, 83),
-                    };
+                {
+                    Index = 31,
+                    Library = Libraries.Title,
+                    Parent = this,
+                    Location = new Point(52, 83),
+                };
 
                 PassLabel = new MirImageControl
-                    {
-                        Index = 32,
-                        Library = Libraries.Title,
-                        Parent = this,
-                        Location = new Point(43, 105)
-                    };
+                {
+                    Index = 32,
+                    Library = Libraries.Title,
+                    Parent = this,
+                    Location = new Point(43, 105)
+                };
 
                 OKButton = new MirButton
-                    {
-                        Enabled = false,
-                        Size = new Size(42,42),
-                        HoverIndex = 321,
-                        Index = 320,
-                        Library = Libraries.Title,
-                        Location = new Point(227, 81),
-                        Parent = this,
-                        PressedIndex = 322
-                    };
+                {
+                    Enabled = false,
+                    Size = new Size(42, 42),
+                    HoverIndex = 321,
+                    Index = 320,
+                    Library = Libraries.Title,
+                    Location = new Point(227, 81),
+                    Parent = this,
+                    PressedIndex = 322
+                };
                 OKButton.Click += (o, e) => Login();
 
                 AccountButton = new MirButton
-                    {
-                        HoverIndex = 324,
-                        Index = 323,
-                        Library = Libraries.Title,
-                        Location = new Point(60, 163),
-                        Parent = this,
-                        PressedIndex = 325,
-                    };
+                {
+                    HoverIndex = 324,
+                    Index = 323,
+                    Library = Libraries.Title,
+                    Location = new Point(60, 163),
+                    Parent = this,
+                    PressedIndex = 325,
+                };
 
                 PassButton = new MirButton
-                    {
-                        HoverIndex = 327,
-                        Index = 326,
-                        Library = Libraries.Title,
-                        Location = new Point(166, 163),
-                        Parent = this,
-                        PressedIndex = 328,
-                    };
+                {
+                    HoverIndex = 327,
+                    Index = 326,
+                    Library = Libraries.Title,
+                    Location = new Point(166, 163),
+                    Parent = this,
+                    PressedIndex = 328,
+                };
 
                 ViewKeyButton = new MirButton
                 {
@@ -423,22 +422,22 @@ namespace Client.MirScenes
                 };
 
                 CloseButton = new MirButton
-                    {
-                        HoverIndex = 330,
-                        Index = 329,
-                        Library = Libraries.Title,
-                        Location = new Point(166, 189),
-                        Parent = this,
-                        PressedIndex = 331,
-                    };
+                {
+                    HoverIndex = 330,
+                    Index = 329,
+                    Library = Libraries.Title,
+                    Location = new Point(166, 189),
+                    Parent = this,
+                    PressedIndex = 331,
+                };
                 CloseButton.Click += (o, e) => Program.Form.Close();
 
                 AccountIDTextBox = new MirTextBox
-                    {
-                        Location = new Point(85, 85),
-                        Parent = this,
-                        Size = new Size(136, 12),
-                        MaxLength = Globals.MaxAccountIDLength
+                {
+                    Location = new Point(85, 85),
+                    Parent = this,
+                    Size = new Size(136, 12),
+                    MaxLength = Globals.MaxAccountIDLength
                 };
                 AccountIDTextBox.SetFocus();
                 AccountIDTextBox.TextBox.TextChanged += AccountIDTextBox_TextChanged;
@@ -448,13 +447,13 @@ namespace Client.MirScenes
 
 
                 PasswordTextBox = new MirTextBox
-                    {
-                        Location = new Point(85, 108),
-                        Parent = this,
-                        Password = true,
-                        Size = new Size(136, 15),
-                        MaxLength = Globals.MaxPasswordLength
-                    };
+                {
+                    Location = new Point(85, 108),
+                    Parent = this,
+                    Password = true,
+                    Size = new Size(136, 15),
+                    MaxLength = Globals.MaxPasswordLength
+                };
 
                 PasswordTextBox.TextBox.TextChanged += PasswordTextBox_TextChanged;
                 PasswordTextBox.TextBox.KeyPress += TextBox_KeyPress;
@@ -503,7 +502,7 @@ namespace Client.MirScenes
             }
             public void TextBox_KeyPress(object sender, KeyPressEventArgs e)
             {
-                if (sender == null || e.KeyChar != (char) Keys.Enter) return;
+                if (sender == null || e.KeyChar != (char)Keys.Enter) return;
 
                 e.Handled = true;
 
@@ -525,11 +524,11 @@ namespace Client.MirScenes
             {
                 OKButton.Enabled = _accountIDValid && _passwordValid;
             }
-            
+
             private void Login()
             {
                 OKButton.Enabled = false;
-                Network.Enqueue(new C.Login {AccountID = AccountIDTextBox.Text, Password = PasswordTextBox.Text});
+                Network.Enqueue(new C.Login { AccountID = AccountIDTextBox.Text, Password = PasswordTextBox.Text });
             }
 
             public void Hide()
@@ -667,7 +666,7 @@ namespace Client.MirScenes
 
             private void DisposeKeys()
             {
-                foreach(MirButton button in _buttons)
+                foreach (MirButton button in _buttons)
                 {
                     if (button != null && !button.IsDisposed) button.Dispose();
                 }
@@ -727,9 +726,9 @@ namespace Client.MirScenes
 
                 string keyToAdd = chr.ToString();
 
-                if (CMain.IsKeyLocked(Keys.CapsLock)) 
-                    keyToAdd = keyToAdd.ToUpper(); 
-                else 
+                if (CMain.IsKeyLocked(Keys.CapsLock))
+                    keyToAdd = keyToAdd.ToUpper();
+                else
                     keyToAdd = keyToAdd.ToLower();
 
                 currentTextBox.Text += keyToAdd;
@@ -945,7 +944,7 @@ namespace Client.MirScenes
                     Size = new Size(300, 70),
                     Visible = false
                 };
-                
+
             }
 
 
@@ -1150,19 +1149,19 @@ namespace Client.MirScenes
                 OKButton.Enabled = false;
 
                 Network.Enqueue(new C.NewAccount
-                    {
-                        AccountID = AccountIDTextBox.Text,
-                        Password = Password1TextBox.Text,
-                        EMailAddress = EMailTextBox.Text,
-                        BirthDate = !string.IsNullOrEmpty(BirthDateTextBox.Text)
+                {
+                    AccountID = AccountIDTextBox.Text,
+                    Password = Password1TextBox.Text,
+                    EMailAddress = EMailTextBox.Text,
+                    BirthDate = !string.IsNullOrEmpty(BirthDateTextBox.Text)
                                         ? DateTime.Parse(BirthDateTextBox.Text)
                                         : DateTime.MinValue,
-                        UserName = UserNameTextBox.Text,
-                        SecretQuestion = QuestionTextBox.Text,
-                        SecretAnswer = AnswerTextBox.Text,
-                    });
+                    UserName = UserNameTextBox.Text,
+                    SecretQuestion = QuestionTextBox.Text,
+                    SecretAnswer = AnswerTextBox.Text,
+                });
             }
-            
+
             public void Show()
             {
                 if (Visible) return;
@@ -1210,7 +1209,7 @@ namespace Client.MirScenes
                          _currentPasswordValid,
                          _newPassword1Valid,
                          _newPassword2Valid;
-            
+
             public ChangePasswordDialog()
             {
                 Index = 50;
@@ -1318,7 +1317,7 @@ namespace Client.MirScenes
             }
             private void CurrentPasswordTextBox_TextChanged(object sender, EventArgs e)
             {
-              Regex reg = new Regex(@"^[A-Za-z0-9]{" + Globals.MinPasswordLength + "," + Globals.MaxPasswordLength + "}$");
+                Regex reg = new Regex(@"^[A-Za-z0-9]{" + Globals.MinPasswordLength + "," + Globals.MaxPasswordLength + "}$");
 
                 if (string.IsNullOrEmpty(CurrentPasswordTextBox.Text) || !reg.IsMatch(CurrentPasswordTextBox.Text))
                 {
@@ -1368,11 +1367,11 @@ namespace Client.MirScenes
                 OKButton.Enabled = false;
 
                 Network.Enqueue(new C.ChangePassword
-                    {
-                        AccountID = AccountIDTextBox.Text,
-                        CurrentPassword = CurrentPasswordTextBox.Text,
-                        NewPassword = NewPassword1TextBox.Text
-                    });
+                {
+                    AccountID = AccountIDTextBox.Text,
+                    CurrentPassword = CurrentPasswordTextBox.Text,
+                    NewPassword = NewPassword1TextBox.Text
+                });
             }
 
             public void Show()

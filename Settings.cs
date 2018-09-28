@@ -30,7 +30,7 @@ namespace Client
 
         public const string DataPath = @".\Data\",
                             MapPath = @".\Map\",
-                            SoundPath = @".\wav\",
+                            SoundPath = @".\Sound\",
                             ExtraDataPath = @".\Data\Extra\",
                             ShadersPath = @".\Data\Shaders\",
                             MonsterPath = @".\Data\Monster\",
@@ -247,7 +247,7 @@ namespace Client
 
             //AutoPatcher
             P_Patcher = Reader.ReadBoolean("Launcher", "Enabled", P_Patcher);
-            //P_Host = Reader.ReadString("Launcher", "Host", P_Host);
+            P_Host = Reader.ReadString("Launcher", "Host", P_Host);
             P_PatchFileName = Reader.ReadString("Launcher", "PatchFile", P_PatchFileName);
             P_NeedLogin = Reader.ReadBoolean("Launcher", "NeedLogin", P_NeedLogin);
             P_Login = Reader.ReadString("Launcher", "Login", P_Login);

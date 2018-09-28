@@ -5,9 +5,6 @@ using Microsoft.DirectX.DirectSound;
 
 namespace Client.MirSounds
 {
-/// <summary>
-/// 播放音乐类,这个要重新封装下
-/// </summary>
     static class SoundManager
     {
         public static Device Device;
@@ -49,9 +46,8 @@ namespace Client.MirSounds
         }
         public static void LoadSoundList()
         {
-            //这个文件名不对
-            //string fileName = Path.Combine(Settings.SoundPath, "SoundList.lst");
-            string fileName = Path.Combine(Settings.SoundPath, "sound.lst");
+            string fileName = Path.Combine(Settings.SoundPath, "SoundList.lst");
+
             if (!File.Exists(fileName)) return;
 
             string[] lines = File.ReadAllLines(fileName);
@@ -75,15 +71,14 @@ namespace Client.MirSounds
             for (int i = 0; i < Sounds.Count; i++)
             {
                 if (Sounds[i].Index != index) continue;
-                
+
                 Sounds[i].Stop();
                 return;
             }
         }
-        //播放音乐，
+
         public static void PlaySound(int index, bool loop = false)
         {
-            MirLog.debug("PlaySound1:" + index);
             if (Device == null) return;
             
             if (_vol <= -3000) return;
@@ -91,10 +86,11 @@ namespace Client.MirSounds
             for (int i = 0; i < Sounds.Count; i++)
             {
                 if (Sounds[i].Index != index) continue;
+                //MirLog.debug("pay filename:" + Sounds[i].fname);
                 Sounds[i].Play();
                 return;
             }
-           
+
 
 
             if (IndexList.ContainsKey(index))
@@ -105,15 +101,13 @@ namespace Client.MirSounds
                 if (index > 20000)
                 {
                     index -= 20000;
-                    filename = string.Format("M{0:0}-{1:0}.wav", index/10, index%10);
-                    
+                    filename = string.Format("M{0:0}-{1:0}.wav", index / 10, index % 10);
                     Sounds.Add(new SoundLibrary(index + 20000, filename, loop));
                 }
                 else if (index < 10000)
                 {
 
-                    filename = string.Format("{0:000}-{1:0}.wav", index/10, index%10);
-                    
+                    filename = string.Format("{0:000}-{1:0}.wav", index / 10, index % 10);
                     Sounds.Add(new SoundLibrary(index, filename, loop));
                 }
             }
@@ -241,7 +235,7 @@ namespace Client.MirSounds
 
             Revive = 20791,
             ZombieRevive = 0705,
-            
+
             //Mounts
             MountWalkL = 10176,
             MountWalkR = 10177,

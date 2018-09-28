@@ -2173,9 +2173,15 @@ namespace Client.MirScenes.Dialogs
             Visible = false;
         }
     }
+
+    /// <summary>
+    /// //角色信息的窗口，这个好像卡窗口，要看下这个到底怎么回事才可以
+    /// </summary>
     public sealed class CharacterDialog : MirImageControl
     {
         public MirButton CloseButton, CharacterButton, StatusButton, StateButton, SkillButton;
+
+        //好多页，这里有5页
         public MirImageControl CharacterPage, StatusPage, StatePage, SkillPage, ClassImage;
 
         public MirLabel NameLabel, GuildLabel, LoverLabel;
@@ -2197,7 +2203,7 @@ namespace Client.MirScenes.Dialogs
             Location = new Point(Settings.ScreenWidth - 264, 0);
             Movable = true;
             Sort = true;
-
+            //画前刷新数据？
             BeforeDraw += (o, e) => RefreshInterface();
 
             CharacterPage = new MirImageControl
@@ -2207,9 +2213,11 @@ namespace Client.MirScenes.Dialogs
                 Library = Libraries.Prguse,
                 Location = new Point(8, 90),
             };
+
             CharacterPage.AfterDraw += (o, e) =>
             {
                 if (Libraries.StateItems == null) return;
+
                 ItemInfo RealItem = null;
                 if (Grid[(int)EquipmentSlot.Armour].Item != null)
                 {
@@ -3874,7 +3882,7 @@ namespace Client.MirScenes.Dialogs
 
         }
 
-
+        //这个是干嘛？自动组合键？例如免shuit?
         private void ToggleSkillButtons(bool Ctrl)
         {
             foreach (KeyBind KeyCheck in CMain.InputKeys.Keylist)

@@ -212,7 +212,7 @@ namespace Client.MirControls
             _nextOffSet = CMain.Time;
             Animations.Add(this);
         }
-
+        //持续更新动画，这个方法要循环调用
         public void UpdateOffSet()
         {
             if (_fadeIn && CMain.Time > _nextFadeTime)
