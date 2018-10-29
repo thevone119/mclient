@@ -10,6 +10,7 @@ using System.Windows.Forms;
 
 namespace Client.MirScenes.Dialogs
 {
+    //排行榜
     //thx to Pete107/Petesn00beh for the base of this :p
     public class RankingDialog : MirImageControl
     {

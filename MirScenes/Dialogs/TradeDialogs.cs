@@ -13,6 +13,7 @@ using C = ClientPackets;
 
 namespace Client.MirScenes.Dialogs
 {
+    //交易对话框
     public sealed class TradeDialog : MirImageControl
     {
         public MirItemCell[] Grid;

@@ -10,6 +10,10 @@ using System.Text.RegularExpressions;
 
 namespace Client.MirObjects
 {
+    /// <summary>
+    /// 这个是物品？掉落物品这些
+    /// 
+    /// </summary>
     class ItemObject : MapObject
     {
         public override ObjectType Race{
@@ -46,10 +50,11 @@ namespace Client.MirObjects
             DrawY = CurrentLocation.Y;
 
         }
+
+        //金币,这个服务器端返回掉落金币大小好一点吧？其实也没什么，金币作用不的大了
         public void Load(S.ObjectGold info)
         {
-            Name = string.Format("Gold ({0:###,###,###})", info.Gold);
-
+            Name = string.Format("金币 ({0:###,###,###})", info.Gold);
 
             BodyLibrary = Libraries.FloorItems;
 

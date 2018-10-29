@@ -12,6 +12,7 @@ using System.Windows.Forms;
 
 namespace Client.MirScenes.Dialogs
 {
+    //邮件列表
     public class MailListDialog : MirImageControl
     {
         MirButton HelpButton, CloseButton;

@@ -14,6 +14,9 @@ using Client.MirScenes.Dialogs;
 
 namespace Client.MirObjects
 {
+    /// <summary>
+    /// 玩家
+    /// </summary>
     public class PlayerObject : MapObject
     {
         public override ObjectType Race
@@ -95,7 +98,7 @@ namespace Client.MirObjects
         //Elemental system END
 
         public SpellEffect CurrentEffect;
-
+        //FastRun:这个是免助跑
         public bool RidingMount, Sprint, FastRun, Fishing, FoundFish;
         public long StanceTime, MountTime, FishingTime;
         public long BlizzardStopTime, ReincarnationStopTime, SlashingBurstTime;

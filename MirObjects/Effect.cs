@@ -9,6 +9,12 @@ using Client.MirSounds;
 
 namespace Client.MirObjects
 {
+    /// <summary>
+    /// 特效，应该是人物，怪物，装备等身上的特效
+    /// 比如中毒？
+    /// 这个和spell不一样，这个是跟随人物，怪物，装备等位置移动的
+    /// 这里只定义各种特效，具体怎么画不在这里
+    /// </summary>
     public class Effect
     {
         public MLibrary Library;
@@ -141,7 +147,7 @@ namespace Client.MirObjects
             Played = null;
         }
     }
-
+    //mis的特效
     public class Missile : Effect
     {
         public static List<Missile> Missiles = new List<Missile>();
@@ -268,7 +274,7 @@ namespace Client.MirObjects
             return -1;
         }
     }
-
+    //元素特效
     public class ElementsEffect : Effect
     {
         int myType;//1 = green orb, 2 = blue orb, 3 = red orb, 4 = mixed orbs
@@ -370,7 +376,7 @@ namespace Client.MirObjects
             return -1;
         }
     }
-
+    //各种特殊效果
     public class SpecialEffect : Effect
     {
         public uint EffectType = 0;
@@ -389,7 +395,7 @@ namespace Client.MirObjects
             base.Process();
         }
     }
-
+    //各种buff
     public class BuffEffect : Effect
     {
         public BuffType BuffType;
@@ -460,7 +466,7 @@ namespace Client.MirObjects
         }
 
     }
-
+    //这个是发光？鼠标移到动物身上发光？
     public class LightEffect : Effect
     {
         public LightEffect(int duration, MapObject owner, long starttime = 0, int lightDistance = 6, Color? lightColour = null)

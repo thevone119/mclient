@@ -22,6 +22,7 @@ using System.Drawing.Imaging;
 
 namespace Client.MirScenes.Dialogs
 {
+    //重要的主窗体都在这里了，人物，状态，背包等
     public sealed class MainDialog : MirImageControl
     {
         public static UserObject User
@@ -4431,7 +4432,7 @@ namespace Client.MirScenes.Dialogs
         {
             Magic = magic;
 
-            NameLabel.Text = Magic.Spell.ToString();
+            NameLabel.Text = Magic.Name;
 
             LevelLabel.Text = Magic.Level.ToString();
             switch (Magic.Level)
@@ -4539,7 +4540,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 Size = new Size(230, 32),
                 DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.WordBreak,
-                Text = string.Format("Select the Key for: {0}", magic.Spell)
+                Text = string.Format("设置快捷键: {0}", magic.Name)
             };
 
             NoneButton = new MirButton
@@ -4794,16 +4795,33 @@ namespace Client.MirScenes.Dialogs
             FKeys[Key - 1].PressedIndex = 1658;
         }
     }
+    //大地图，B按出的大地图，这里要扩展，支持大地图看坐标，支持大地图自动寻路
     public sealed class BigMapDialog : MirControl
     {
+        private MirLabel pointlab;
+        
         public BigMapDialog()
         {
-            NotControl = true;
+            //NotControl = true;
             Location = new Point(130, 100);
             //Border = true;
             //BorderColour = Color.Lime;
             BeforeDraw += (o, e) => OnBeforeDraw();
             Sort = true;
+            //加入坐标显示
+            pointlab = new MirLabel
+            {
+                AutoSize = true,
+                ForeColour = Color.White,
+                //OutLineColour = Color.Black,
+                Parent = this,
+                Location = new Point(2, 2),
+                Visible = true
+            };
+            //鼠标移动事件监听，鼠标移动的时候，显示坐标变换
+            this.MouseMove += (o, e) => OnMouseMove();
+            this.MouseDown += (o, e) => OnMouseDown(o,e);
+
         }
 
         private void OnBeforeDraw()
@@ -4861,6 +4879,7 @@ namespace Client.MirScenes.Dialogs
             int startPointX = (int)(viewRect.X / scaleX);
             int startPointY = (int)(viewRect.Y / scaleY);
 
+            //画地图上的点，应该是只画玩家和怪物，NPC
             for (int i = MapControl.Objects.Count - 1; i >= 0; i--)
             {
                 MapObject ob = MapControl.Objects[i];
@@ -4886,6 +4905,41 @@ namespace Client.MirScenes.Dialogs
             }
         }
 
+        //重写鼠标移动事件
+        private  void OnMouseMove()
+        {
+            MapControl map = GameScene.Scene.MapControl;
+            if (map == null || !Visible) return;
+            float scaleX = Size.Width / (float)map.Width;
+            float scaleY = Size.Height / (float)map.Height;
+            int x = CMain.MPoint.X - Location.X;
+            
+            if (x > 0)
+            {
+                x = (int)(x/scaleX);
+            }
+            int y = CMain.MPoint.Y - Location.Y;
+            if (y > 0)
+            {
+                y = (int)(y/scaleY);
+            }
+            pointlab.Text = x + "," + y;
+            //MirLog.debug(CMain.MPoint.X+","+ CMain.MPoint.Y);
+        }
+
+        //响应右键事件，右键点击地图，进行寻址
+        private void OnMouseDown(object sender, MouseEventArgs e)
+        {
+            if(e.Button!= MouseButtons.Right)
+            {
+                return;
+            }
+            //开启自动寻址
+            MapControl map = GameScene.Scene.MapControl;
+            CellInfo[,] CL = map.M2CellInfo;
+            MirLog.debug("X:"+ e.X);
+            
+        }
 
         public void Toggle()
         {

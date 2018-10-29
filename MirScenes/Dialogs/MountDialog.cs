@@ -14,6 +14,7 @@ using C = ClientPackets;
 
 namespace Client.MirScenes.Dialogs
 {
+    //坐骑
     public sealed class MountDialog : MirImageControl
     {
         public MirLabel MountName, MountLoyalty;

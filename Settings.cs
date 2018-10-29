@@ -73,7 +73,7 @@ namespace Client
 
         //Network
         public static bool UseConfig = false;
-        public static string IPAddress = "127.0.0.1";
+        public static string IPAddress = "127.0.0.1";//61.177.74.230
         public static int Port = 7000;
         public const int TimeOut = 5000;
 
@@ -119,7 +119,7 @@ namespace Client
 
         public static bool
             SkillMode = false,
-            SkillBar = true,
+            SkillBar = false,//是否显示技能条？左上角的么
             //SkillSet = true,
             Effect = true,
             LevelEffect = true,

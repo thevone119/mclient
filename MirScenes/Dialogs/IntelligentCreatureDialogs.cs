@@ -13,6 +13,7 @@ using C = ClientPackets;
 
 namespace Client.MirScenes.Dialogs
 {
+    //这个是宠物
     public sealed class IntelligentCreatureDialog : MirImageControl
     {
         public MirImageControl FullnessBG, FullnessFG, FullnessMin, FullnessNow;

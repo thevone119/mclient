@@ -13,26 +13,38 @@ using Client.MirScenes.Dialogs;
 namespace Client.MirObjects
 {
     /// <summary>
-    /// 地图对象
+    /// 地图对象，抽象类
+    /// 包括玩家，物品，怪物等等
     /// </summary>
     public abstract class MapObject
     {
+        //这些都是静态的，不算
         public static Font ChatFont = new Font(Settings.FontName, 10F);
         public static List<MirLabel> LabelList = new List<MirLabel>();
 
         public static UserObject User;
         public static MapObject MouseObject, TargetObject, MagicObject;
-        public abstract ObjectType Race { get; }
-        public abstract bool Blocking { get; }
 
+        //这些定义地图对象的类型，子类必须实现，而且只有get方法，要子类写死呢
+        public abstract ObjectType Race { get; }
+        //是否阻挡
+        public abstract bool Blocking { get; }
+        //所有地图对象都有个ID,唯一的ID
         public uint ObjectID;
+        //名称
         public string Name = string.Empty;
+        //当前位置，地图中的位置
         public Point CurrentLocation, MapLocation;
+        //朝向
         public MirDirection Direction;
+        //死亡，隐藏，
         public bool Dead, Hidden, SitDown, Sneaking;
+        //状态，如中毒等,这些不是通用的吧
         public PoisonType Poison;
+        //死亡时间
         public long DeadTime;
         public byte AI;
+        //这个是什么？僵化，硬化？
         public bool InTrapRock;
 
         public bool Blend = true;
@@ -76,6 +88,7 @@ namespace Client.MirObjects
             get { return new Point(0, 0); }
         }
 
+        //所有物品服务器返回时候，根据ID把客户端的之前的相同ID的物品先删除
         protected MapObject(uint objectID)
         {
             ObjectID = objectID;

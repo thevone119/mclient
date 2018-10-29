@@ -112,6 +112,7 @@ namespace Client.MirScenes
         //not added yet
         public KeyboardLayoutDialog KeyboardLayoutDialog;
 
+        //各种全局对象，用户，物品，怪物，等等全局保存
         public static List<ItemInfo> ItemInfoList = new List<ItemInfo>();
         public static List<UserId> UserIdList = new List<UserId>();
         public static List<ChatItem> ChatItemList = new List<ChatItem>();
@@ -279,7 +280,7 @@ namespace Client.MirScenes
             if (OutputMessages.Count > OutputLines.Length)
                 OutputMessages.RemoveAt(0);
         }
-
+        //输出消息死循环
         private void ProcessOuput()
         {
             for (int i = 0; i < OutputMessages.Count; i++)
@@ -322,6 +323,25 @@ namespace Client.MirScenes
             //bool skillMode = Settings.SkillMode ? CMain.Tilde : CMain.Ctrl;
             //bool altBind = skillMode ? Settings.SkillSet : !Settings.SkillSet;
             KeyBind KeyCheck = CMain.GetKeyBind(e.KeyCode);
+            if (KeyCheck == null)
+            {
+                foreach (KeyBind KeyCheck2 in CMain.InputKeys.Keylist)
+                {
+                    if (KeyCheck2.Key == Keys.None)
+                        continue;
+                    if (KeyCheck2.Key != e.KeyCode)
+                        continue;
+                    if ((KeyCheck2.RequireAlt != 2) && (KeyCheck2.RequireAlt != (CMain.Alt ? 1 : 0)))
+                        continue;
+                    if ((KeyCheck2.RequireShift != 2) && (KeyCheck2.RequireShift != (CMain.Shift ? 1 : 0)))
+                        continue;
+                    if ((KeyCheck2.RequireCtrl != 2) && (KeyCheck2.RequireCtrl != (CMain.Ctrl ? 1 : 0)))
+                        continue;
+                    if ((KeyCheck2.RequireTilde != 2) && (KeyCheck2.RequireTilde != (CMain.Tilde ? 1 : 0)))
+                        continue;
+                    KeyCheck = KeyCheck2;
+                }
+            }
             if (KeyCheck == null)
             {
                 return;
@@ -617,7 +637,9 @@ namespace Client.MirScenes
                     else HelpDialog.Hide();
                     break;
                 case KeybindOptions.Autorun:
-                    MapControl.AutoRun = !MapControl.AutoRun;
+                    //这里改下，自动行走按了D就自动行走。不要取消，因为鼠标左右键都会自动取消
+                    //MapControl.AutoRun = !MapControl.AutoRun;
+                    MapControl.AutoRun = true;
                     break;
                 case KeybindOptions.Cameramode:
 
@@ -659,14 +681,15 @@ namespace Client.MirScenes
                 
             }
         }
-
+       
+        //释放魔法控制，这个控制粗糙了。
         public void UseSpell(int key)
         {
             if (User.RidingMount || User.Fishing) return;
 
             if(!User.HasClassWeapon && User.Weapon >= 0)
             {
-                ChatDialog.ReceiveChat("You must be wearing a suitable weapon to perform this skill", ChatType.System);
+                ChatDialog.ReceiveChat("你必须佩戴合适的武器来完成这项技能", ChatType.System);
                 return;
             }
 
@@ -691,7 +714,7 @@ namespace Client.MirScenes
                         if (CMain.Time >= OutputDelay)
                         {
                             OutputDelay = CMain.Time + 1000;
-                            GameScene.Scene.OutputMessage(string.Format("You cannot cast {0} for another {1} seconds.", magic.Spell.ToString(), ((magic.CastTime + magic.Delay) - CMain.Time - 1) / 1000 + 1));
+                            GameScene.Scene.OutputMessage(string.Format("您不能使用 {0} 在 {1} 秒内.", magic.Spell.ToString(), ((magic.CastTime + magic.Delay) - CMain.Time - 1) / 1000 + 1));
                         }
 
                         return;
@@ -715,21 +738,21 @@ namespace Client.MirScenes
                 case Spell.Thrusting:
                     if (CMain.Time < ToggleTime) return;
                     Thrusting = !Thrusting;
-                    ChatDialog.ReceiveChat(Thrusting ? "Use Thrusting." : "Do not use Thrusting.", ChatType.Hint);
+                    ChatDialog.ReceiveChat(Thrusting ? "使用野蛮冲撞." : "不能使用 野蛮冲撞.", ChatType.Hint);
                     ToggleTime = CMain.Time + 1000;
                     Network.Enqueue(new C.SpellToggle { Spell = magic.Spell, CanUse = Thrusting });
                     break;
                 case Spell.HalfMoon:
                     if (CMain.Time < ToggleTime) return;
                     HalfMoon = !HalfMoon;
-                    ChatDialog.ReceiveChat(HalfMoon ? "Use Half Moon." : "Do not use Half Moon.", ChatType.Hint);
+                    ChatDialog.ReceiveChat(HalfMoon ? "开启半月." : "关闭半月.", ChatType.Hint);
                     ToggleTime = CMain.Time + 1000;
                     Network.Enqueue(new C.SpellToggle { Spell = magic.Spell, CanUse = HalfMoon });
                     break;
                 case Spell.CrossHalfMoon:
                     if (CMain.Time < ToggleTime) return;
                     CrossHalfMoon = !CrossHalfMoon;
-                    ChatDialog.ReceiveChat(CrossHalfMoon ? "Use Cross Half Moon." : "Do not use Cross Half Moon.", ChatType.Hint);
+                    ChatDialog.ReceiveChat(CrossHalfMoon ? "开启十字半月." : "关闭十字半月.", ChatType.Hint);
                     ToggleTime = CMain.Time + 1000;
                     Network.Enqueue(new C.SpellToggle { Spell = magic.Spell, CanUse = CrossHalfMoon });
                     break;
@@ -747,7 +770,7 @@ namespace Client.MirScenes
                     cost = magic.Level * magic.LevelCost + magic.BaseCost;
                     if (cost > MapObject.User.MP)
                     {
-                        Scene.OutputMessage("Not Enough Mana to cast.");
+                        Scene.OutputMessage("MP不足.");
                         return;
                     }
                     TwinDrakeBlade = true;
@@ -761,7 +784,7 @@ namespace Client.MirScenes
                     cost = magic.Level * magic.LevelCost + magic.BaseCost;
                     if (cost > MapObject.User.MP)
                     {
-                        Scene.OutputMessage("Not Enough Mana to cast.");
+                        Scene.OutputMessage("MP不足.");
                         return;
                     }
                     Network.Enqueue(new C.SpellToggle { Spell = magic.Spell, CanUse = true });
@@ -770,7 +793,7 @@ namespace Client.MirScenes
                     cost = magic.Level * magic.LevelCost + magic.BaseCost;
                     if (cost > MapObject.User.MP)
                     {
-                        Scene.OutputMessage("Not Enough Mana to cast.");
+                        Scene.OutputMessage("MP不足.");
                         return;
                     }
 
@@ -794,25 +817,25 @@ namespace Client.MirScenes
         //退出游戏
         public void QuitGame()
         {
-            if (CMain.Time >= LogTime)
+            if (ServerConfig.exitGameType== ExitGameType.noWait||CMain.Time >= LogTime)
             {
                 //If Last Combat < 10 CANCEL
-                MirMessageBox messageBox = new MirMessageBox("Do you want to quit Legend of Mir?", MirMessageBoxButtons.YesNo);
+                MirMessageBox messageBox = new MirMessageBox("确定要退出游戏么?", MirMessageBoxButtons.YesNo);
                 messageBox.YesButton.Click += (o, e) => Program.Form.Close();
                 messageBox.Show();
             }
             else
             {
-                ChatDialog.ReceiveChat("Cannot leave game for " + (LogTime - CMain.Time) / 1000 + " seconds.", ChatType.System);
+                ChatDialog.ReceiveChat("请等待 " + (LogTime - CMain.Time) / 1000 + " 秒后再退出.", ChatType.System);
             }
         }
         //退出，去到选择人物界面
         public void LogOut()
         {
-            if (CMain.Time >= LogTime)
+            if (ServerConfig.exitGameType == ExitGameType.noWait||CMain.Time >= LogTime)
             {
                 //If Last Combat < 10 CANCEL
-                MirMessageBox messageBox = new MirMessageBox("Do you want to log out of Legend of Mir?", MirMessageBoxButtons.YesNo);
+                MirMessageBox messageBox = new MirMessageBox("确定退出游戏到人物界面么?", MirMessageBoxButtons.YesNo);
                 messageBox.YesButton.Click += (o, e) =>
                 {
                     Network.Enqueue(new C.LogOut());
@@ -822,7 +845,7 @@ namespace Client.MirScenes
             }
             else
             {
-                ChatDialog.ReceiveChat("Cannot leave game for " + (LogTime - CMain.Time) / 1000 + " seconds.", ChatType.System);
+                ChatDialog.ReceiveChat("请等待 " + (LogTime - CMain.Time) / 1000 + " 秒后再退出.", ChatType.System);
             }
         }
 
@@ -852,12 +875,12 @@ namespace Client.MirScenes
             for (int i = 0; i < OutputLines.Length; i++)
                 OutputLines[i].Draw();
         }
-
+        //游戏死循环
         public override void Process()
         {
             if (MapControl == null || User == null)
                 return;
-
+            //100毫秒内不能移动
             if (CMain.Time >= MoveTime)
             {
                 MoveTime += 100; //Move Speed
@@ -868,21 +891,22 @@ namespace Client.MirScenes
             else
                 CanMove = false;
 
-
+            //ping有个毛用,这里又发多一个心跳包，其实没必要吧,1分钟一个？
             if (CMain.Time >= NextPing)
             {
                 NextPing = CMain.Time + 60000;
                 Network.Enqueue(new C.KeepAlive() { Time = CMain.Time });
             }
-
+            //as关键字是转换，可以将对象转换为指定类型,转换成功将会返回转换后的对象,不成功则返回null
+            //如果鼠标控制的视图是一个物品格子，则判断这个物品格子
             MirItemCell cell = MouseControl as MirItemCell;
-
             if (cell != null && HoverItem != cell.Item && HoverItem != cell.ShadowItem)
             {
                 DisposeItemLabel();
                 HoverItem = null;
                 CreateItemLabel(cell.Item);
             }
+
 
             if (ItemLabel != null && !ItemLabel.IsDisposed)
             {
@@ -896,7 +920,7 @@ namespace Client.MirScenes
                     y = Settings.ScreenHeight - ItemLabel.Size.Height;
                 ItemLabel.Location = new Point(x, y);
             }
-
+            //邮件哦
             if (MailLabel != null && !MailLabel.IsDisposed)
             {
                 MailLabel.BringToFront();
@@ -909,7 +933,7 @@ namespace Client.MirScenes
                     y = Settings.ScreenHeight - MailLabel.Size.Height;
                 MailLabel.Location = new Point(x, y);
             }
-
+            //这个应该是好友备注吧
             if (MemoLabel != null && !MemoLabel.IsDisposed)
             {
                 MemoLabel.BringToFront();
@@ -922,7 +946,7 @@ namespace Client.MirScenes
                     y = Settings.ScreenHeight - MemoLabel.Size.Height;
                 MemoLabel.Location = new Point(x, y);
             }
-
+            //行会
             if (GuildBuffLabel != null && !GuildBuffLabel.IsDisposed)
             {
                 GuildBuffLabel.BringToFront();
@@ -941,7 +965,7 @@ namespace Client.MirScenes
             if (ShowReviveMessage && CMain.Time > User.DeadTime && User.CurrentAction == MirAction.Dead)
             {
                 ShowReviveMessage = false;
-                MirMessageBox messageBox = new MirMessageBox("You have died, Do you want to revive in town?", MirMessageBoxButtons.YesNo, false);
+                MirMessageBox messageBox = new MirMessageBox("你挂了, 需要回城重新战斗么?", MirMessageBoxButtons.YesNo, false);
                 //死亡了，增加变黑白屏代码
                 //this.GrayScale = true;
                 
@@ -998,7 +1022,7 @@ namespace Client.MirScenes
             else
                 CharacterDuraPanel.Hide();
         }
-
+        //处理数据包
         public override void ProcessPacket(Packet p)
         {
             switch (p.Index)
@@ -1664,12 +1688,14 @@ namespace Client.MirScenes
                     break;
             }
         }
-
+        //返回心跳包
         private void KeepAlive(S.KeepAlive p)
         {
             if (p.Time == 0) return;
-            PingTime = (CMain.Time - p.Time);
+            PingTime = (CMain.Time - p.Time);//这个时间不准吧
         }
+
+        //服务器端返回的地图信息
         private void MapInformation(S.MapInformation p)
         {
             if (MapControl != null && !MapControl.IsDisposed)
@@ -1678,6 +1704,7 @@ namespace Client.MirScenes
             MapControl.LoadMap();
             InsertControl(0, MapControl);
         }
+        //服务器端返回用户信息
         private void UserInformation(S.UserInformation p)
         {
             User = new UserObject(p.ObjectID);
@@ -1847,6 +1874,7 @@ namespace Client.MirScenes
             User.RefreshStats();
             CharacterDuraPanel.GetCharacterDura();
         }
+        //装备物品
         private void EquipItem(S.EquipItem p)
         {
             MirItemCell fromCell;
@@ -2538,22 +2566,22 @@ namespace Client.MirScenes
             switch (p.Mode)
             {
                 case AttackMode.Peace:
-                    ChatDialog.ReceiveChat("[Attack Mode: Peaceful]", ChatType.Hint);
+                    ChatDialog.ReceiveChat("[攻击模式: 和平]", ChatType.Hint);
                     break;
                 case AttackMode.Group:
-                    ChatDialog.ReceiveChat("[Attack Mode: Group]", ChatType.Hint);
+                    ChatDialog.ReceiveChat("[攻击模式: 组队]", ChatType.Hint);
                     break;
                 case AttackMode.Guild:
-                    ChatDialog.ReceiveChat("[Attack Mode: Guild]", ChatType.Hint);
+                    ChatDialog.ReceiveChat("[攻击模式: 行会]", ChatType.Hint);
                     break;
                 case AttackMode.EnemyGuild:
-                    ChatDialog.ReceiveChat("[Attack Mode: Enemy Guild]", ChatType.Hint);
+                    ChatDialog.ReceiveChat("[攻击模式: 敌对行会]", ChatType.Hint);
                     break;
                 case AttackMode.RedBrown:
-                    ChatDialog.ReceiveChat("[Attack Mode: Red+Brown]", ChatType.Hint);
+                    ChatDialog.ReceiveChat("[攻击模式: 红名]", ChatType.Hint);
                     break;
                 case AttackMode.All:
-                    ChatDialog.ReceiveChat("[Attack Mode: All]", ChatType.Hint);
+                    ChatDialog.ReceiveChat("[攻击模式: 全体]", ChatType.Hint);
                     break;
             }
         }
@@ -2564,16 +2592,16 @@ namespace Client.MirScenes
             switch (p.Mode)
             {
                 case PetMode.Both:
-                    ChatDialog.ReceiveChat("[Pet Mode: Attack and Move]", ChatType.Hint);
+                    ChatDialog.ReceiveChat("[宠物模式: 攻击移动]", ChatType.Hint);
                     break;
                 case PetMode.MoveOnly:
-                    ChatDialog.ReceiveChat("[Pet Mode: Do Not Attack]", ChatType.Hint);
+                    ChatDialog.ReceiveChat("[宠物模式: 仅移动]", ChatType.Hint);
                     break;
                 case PetMode.AttackOnly:
-                    ChatDialog.ReceiveChat("[Pet Mode: Do Not Move]", ChatType.Hint);
+                    ChatDialog.ReceiveChat("[宠物模式: 仅攻击]", ChatType.Hint);
                     break;
                 case PetMode.None:
-                    ChatDialog.ReceiveChat("[Pet Mode: Do Not Attack or Move]", ChatType.Hint);
+                    ChatDialog.ReceiveChat("[宠物模式: 休息]", ChatType.Hint);
                     break;
             }
 
@@ -2596,13 +2624,14 @@ namespace Client.MirScenes
             ItemObject ob = new ItemObject(p.ObjectID);
             ob.Load(p);
         }
+        //获得物品
         private void GainedItem(S.GainedItem p)
         {
             Bind(p.Item);
             AddItem(p.Item);
             User.RefreshStats();
 
-            OutputMessage(string.Format("You gained {0}.", p.Item.FriendlyName));
+            OutputMessage(string.Format("发现 {0}.", p.Item.FriendlyName));
         }
         private void GainedQuestItem(S.GainedQuestItem p)
         {
@@ -2616,7 +2645,7 @@ namespace Client.MirScenes
 
             Gold += p.Gold;
             SoundManager.PlaySound(SoundList.Gold);
-            OutputMessage(string.Format("You gained {0:###,###,###} Gold.", p.Gold));
+            OutputMessage(string.Format("发现 {0:###,###,###} 金币.", p.Gold));
         }
         private void LoseGold(S.LoseGold p)
         {
@@ -2629,13 +2658,14 @@ namespace Client.MirScenes
 
             Credit += p.Credit;
             SoundManager.PlaySound(SoundList.Gold);
-            OutputMessage(string.Format("You gained {0:###,###,###} Credit.", p.Credit));
+            OutputMessage(string.Format("获得 {0:###,###,###} 信誉.", p.Credit));
         }
         private void LoseCredit(S.LoseCredit p)
         {
             Credit -= p.Credit;
             SoundManager.PlaySound(SoundList.Gold);
         }
+        //加载怪物
         private void ObjectMonster(S.ObjectMonster p)
         {
             MonsterObject mob;
@@ -2817,7 +2847,7 @@ namespace Client.MirScenes
                             obj.Damages.Add(new Damage("Miss", 1200, obj.Race == ObjectType.Player ? Color.LightCoral : Color.LightGray, 50));
                             break;
                         case DamageType.Critical:
-                            obj.Damages.Add(new Damage("Crit", 1000, obj.Race == ObjectType.Player ? Color.DarkRed : Color.DarkRed, 50) { Offset = 15 });
+                            obj.Damages.Add(new Damage("暴击", 1000, obj.Race == ObjectType.Player ? Color.DarkRed : Color.DarkRed, 50) { Offset = 15 });
                             break;
                     }
 
@@ -3028,16 +3058,18 @@ namespace Client.MirScenes
             OutputMessage(string.Format("Experience Gained {0}.", p.Amount));
             MapObject.User.Experience += p.Amount;
         }
+        //升级？
         private void LevelChanged(S.LevelChanged p)
         {
             User.Level = p.Level;
             User.Experience = p.Experience;
             User.MaxExperience = p.MaxExperience;
             User.RefreshStats();
-            OutputMessage("Level Increased!");
+            OutputMessage("升级!");
             User.Effects.Add(new Effect(Libraries.Magic2, 1200, 20, 2000, User));
             SoundManager.PlaySound(SoundList.LevelUp);
-            ChatDialog.ReceiveChat("Congratulations! You have leveled up. Your HP and MP have been restored.", ChatType.LevelUp); 
+            //ChatDialog.ReceiveChat("Congratulations! You have leveled up. Your HP and MP have been restored.", ChatType.LevelUp);
+            ChatDialog.ReceiveChat("祝贺你！你已升级。您的HP和MP已经恢复.", ChatType.LevelUp);
         }
         private void ObjectLeveled(S.ObjectLeveled p)
         {
@@ -3336,8 +3368,8 @@ namespace Client.MirScenes
         }
         private void NPCRequestInput(S.NPCRequestInput p)
         {
-            MirInputBox inputBox = new MirInputBox("Please enter the required information.");
-
+            //MirInputBox inputBox = new MirInputBox("Please enter the required information.");
+            MirInputBox inputBox = new MirInputBox("请输入所需信息.");
             inputBox.OKButton.Click += (o1, e1) =>
             {
                 Network.Enqueue(new C.NPCConfirmInput { Value = inputBox.InputTextBox.Text, NPCID = p.NPCID, PageName = p.PageName });
@@ -3854,16 +3886,18 @@ namespace Client.MirScenes
         private void DeleteGroup()
         {
             GroupDialog.GroupList.Clear();
-            ChatDialog.ReceiveChat("You have left the group.", ChatType.Group);
+            //ChatDialog.ReceiveChat("You have left the group.", ChatType.Group);
+            ChatDialog.ReceiveChat("你已退出组队.", ChatType.Group);
         }
         private void DeleteMember(S.DeleteMember p)
         {
             GroupDialog.GroupList.Remove(p.Name);
-            ChatDialog.ReceiveChat(string.Format("-{0} has left the group.", p.Name), ChatType.Group);
+            //ChatDialog.ReceiveChat(string.Format("-{0} has left the group.", p.Name), ChatType.Group);
+            ChatDialog.ReceiveChat(string.Format("-{0} 退出组队.", p.Name), ChatType.Group);
         }
         private void GroupInvite(S.GroupInvite p)
         {
-            MirMessageBox messageBox = new MirMessageBox(string.Format("Do you want to group with {0}?", p.Name), MirMessageBoxButtons.YesNo);
+            MirMessageBox messageBox = new MirMessageBox(string.Format("你要加入组队 {0} ?", p.Name), MirMessageBoxButtons.YesNo);
 
             messageBox.YesButton.Click += (o, e) => Network.Enqueue(new C.GroupInvite { AcceptInvite = true });
             messageBox.NoButton.Click += (o, e) => Network.Enqueue(new C.GroupInvite { AcceptInvite = false });
@@ -3873,7 +3907,7 @@ namespace Client.MirScenes
         private void AddMember(S.AddMember p)
         {
             GroupDialog.GroupList.Add(p.Name);
-            ChatDialog.ReceiveChat(string.Format("-{0} has joined the group.", p.Name), ChatType.Group);
+            ChatDialog.ReceiveChat(string.Format("-{0} 已加入组队.", p.Name), ChatType.Group);
         }
         private void Revived()
         {
@@ -3899,6 +3933,7 @@ namespace Client.MirScenes
                 return;
             }
         }
+        //连技？
         private void SpellToggle(S.SpellToggle p)
         {
             switch (p.Spell)
@@ -3932,6 +3967,7 @@ namespace Client.MirScenes
                     break;
             }
         }
+        //怪物的血？这里可能要改下，要显示具体的血？
         private void ObjectHealth(S.ObjectHealth p)
         {
             for (int i = MapControl.Objects.Count - 1; i >= 0; i--)
@@ -4507,31 +4543,34 @@ namespace Client.MirScenes
             switch (p.Reason)
             {
                 case 0:
-                    MirMessageBox.Show("You cannot use the TrustMerchant when dead.");
+                    //MirMessageBox.Show("You cannot use the TrustMerchant when dead.");
+                    MirMessageBox.Show("死后不能使用商店.");
                     break;
                 case 1:
-                    MirMessageBox.Show("You cannot buy from the TrustMerchant without using.");
+                    //MirMessageBox.Show("You cannot buy from the TrustMerchant without using.");
+                    MirMessageBox.Show("你不能购买此物品.");
                     break;
                 case 2:
-                    MirMessageBox.Show("This item has already been sold.");
+                    MirMessageBox.Show("此物品已出售.");
                     break;
                 case 3:
-                    MirMessageBox.Show("This item has Expired and cannot be brought.");
+                    MirMessageBox.Show("此物品已过期.");
                     break;
                 case 4:
-                    MirMessageBox.Show("You do not have enough gold to buy this item.");
+                    MirMessageBox.Show("你没有足够的金币来买这个物品.");
                     break;
                 case 5:
-                    MirMessageBox.Show("You do not have enough weight or space spare to buy this item.");
+                    MirMessageBox.Show("你没有足够的负重或空间来购买这个物品.");
                     break;
                 case 6:
-                    MirMessageBox.Show("You cannot buy your own items.");
+                    MirMessageBox.Show("你不能买你自己的东西.");
                     break;
                 case 7:
-                    MirMessageBox.Show("You are too far away from the Trust Merchant.");
+                    MirMessageBox.Show("你离NPC太远了.");
                     break;
                 case 8:
-                    MirMessageBox.Show("You cannot hold enough gold to get your sale");
+                    //MirMessageBox.Show("You cannot hold enough gold to get your sale");
+                    MirMessageBox.Show("您的金币不足");
                     break;
             }
 
@@ -4586,7 +4625,7 @@ namespace Client.MirScenes
 
         private void GuildInvite(S.GuildInvite p)
         {
-            MirMessageBox messageBox = new MirMessageBox(string.Format("Do you want to join the {0} guild?", p.Name), MirMessageBoxButtons.YesNo);
+            MirMessageBox messageBox = new MirMessageBox(string.Format("你要加入 {0} 行会?", p.Name), MirMessageBoxButtons.YesNo);
 
             messageBox.YesButton.Click += (o, e) => Network.Enqueue(new C.GuildInvite { AcceptInvite = true });
             messageBox.NoButton.Click += (o, e) => Network.Enqueue(new C.GuildInvite { AcceptInvite = false });
@@ -4596,19 +4635,22 @@ namespace Client.MirScenes
 
         private void GuildNameRequest(S.GuildNameRequest p)
         {
-            MirInputBox inputBox = new MirInputBox("Please enter a guild name, length must be 3~20 characters.");
+            MirInputBox inputBox = new MirInputBox("请输入您的行会名称, 长度 3~10 个字.");
+            /**
             inputBox.InputTextBox.TextBox.KeyPress += (o, e) =>
             {
                 string Allowed = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
                 if (!Allowed.Contains(e.KeyChar) && e.KeyChar != (char)Keys.Back)
                     e.Handled = true;
             };
+            **/
             inputBox.OKButton.Click += (o, e) =>
             {
                 if (inputBox.InputTextBox.Text.Contains('\\'))
                 {
-                    ChatDialog.ReceiveChat("You cannot use the \\ sign in a guildname!", ChatType.System);
+                    ChatDialog.ReceiveChat("请勿使用 \\ 作为行会名称!", ChatType.System);
                     inputBox.InputTextBox.Text = "";
+                    return;
                 }
                 Network.Enqueue(new C.GuildNameReturn { Name = inputBox.InputTextBox.Text });
                 inputBox.Dispose();
@@ -4618,7 +4660,7 @@ namespace Client.MirScenes
 
         private void GuildRequestWar(S.GuildRequestWar p)
         {
-            MirInputBox inputBox = new MirInputBox("Please enter the guild you would like to go to war with.");
+            MirInputBox inputBox = new MirInputBox("请输入敌对行会名称.");
 
             inputBox.OKButton.Click += (o, e) =>
             {
@@ -4635,6 +4677,7 @@ namespace Client.MirScenes
             else
                 GuildDialog.NoticeChange(p.notice);
         }
+        //行会成员变更
         private void GuildMemberChange(S.GuildMemberChange p)
         {
             switch (p.Status)
@@ -4643,20 +4686,20 @@ namespace Client.MirScenes
                     GuildDialog.MemberStatusChange(p.Name, false);
                     break;
                 case 1: // logged on
-                    ChatDialog.ReceiveChat(String.Format("{0} logged on.", p.Name), ChatType.Guild);
+                    ChatDialog.ReceiveChat(String.Format("{0} 登录.", p.Name), ChatType.Guild);
                     GuildDialog.MemberStatusChange(p.Name, true);
                     break;
                 case 2://new member
-                    ChatDialog.ReceiveChat(String.Format("{0} joined guild.", p.Name), ChatType.Guild);
+                    ChatDialog.ReceiveChat(String.Format("{0} 加入工会.", p.Name), ChatType.Guild);
                     GuildDialog.MemberCount++;
                     GuildDialog.MembersChanged = true;
                     break;
                 case 3://kicked member
-                    ChatDialog.ReceiveChat(String.Format("{0} got removed from the guild.", p.Name), ChatType.Guild);
+                    ChatDialog.ReceiveChat(String.Format("{0} 被踢出工会.", p.Name), ChatType.Guild);
                     GuildDialog.MembersChanged = true;
                     break;
                 case 4://member left
-                    ChatDialog.ReceiveChat(String.Format("{0} left the guild.", p.Name), ChatType.Guild);
+                    ChatDialog.ReceiveChat(String.Format("{0} 离开工会.", p.Name), ChatType.Guild);
                     GuildDialog.MembersChanged = true;
                     break;
                 case 5://rank change (name or different rank)
@@ -4727,17 +4770,17 @@ namespace Client.MirScenes
             //OutputMessage(string.Format("Guild Experience Gained {0}.", p.Amount));
             GuildDialog.Experience += p.Amount;
         }
-
+        //工会金币变更
         private void GuildStorageGoldChange(S.GuildStorageGoldChange p)
         {
             switch (p.Type)
             {
                 case 0:
-                    ChatDialog.ReceiveChat(String.Format("{0} donated {1} gold to guild funds.", p.Name, p.Amount), ChatType.Guild);
+                    ChatDialog.ReceiveChat(String.Format("{0} 存入 {1} 金币到工会仓库.", p.Name, p.Amount), ChatType.Guild);
                     GuildDialog.Gold += p.Amount;
                     break;
                 case 1:
-                    ChatDialog.ReceiveChat(String.Format("{0} retrieved {1} gold from guild funds.", p.Name, p.Amount), ChatType.Guild);
+                    ChatDialog.ReceiveChat(String.Format("{0} 取出 {1} 金币从工会仓库.", p.Name, p.Amount), ChatType.Guild);
                     if (GuildDialog.Gold > p.Amount)
                         GuildDialog.Gold -= p.Amount;
                     else
@@ -4852,10 +4895,10 @@ namespace Client.MirScenes
                 Bind(GuildDialog.StorageGrid[i].Item);
             }
         }
-
+        //结婚系统
         private void MarriageRequest(S.MarriageRequest p)
         {
-            MirMessageBox messageBox = new MirMessageBox(string.Format("{0} has asked for your hand in marriage.", p.Name), MirMessageBoxButtons.YesNo);
+            MirMessageBox messageBox = new MirMessageBox(string.Format("{0} 正在向你求婚.", p.Name), MirMessageBoxButtons.YesNo);
 
             messageBox.YesButton.Click += (o, e) => Network.Enqueue(new C.MarriageReply { AcceptInvite = true });
             messageBox.NoButton.Click += (o, e) => { Network.Enqueue(new C.MarriageReply { AcceptInvite = false }); messageBox.Dispose(); };
@@ -4865,7 +4908,7 @@ namespace Client.MirScenes
 
         private void DivorceRequest(S.DivorceRequest p)
         {
-            MirMessageBox messageBox = new MirMessageBox(string.Format("{0} has requested a divorce", p.Name), MirMessageBoxButtons.YesNo);
+            MirMessageBox messageBox = new MirMessageBox(string.Format("{0} 请求离婚", p.Name), MirMessageBoxButtons.YesNo);
 
             messageBox.YesButton.Click += (o, e) => Network.Enqueue(new C.DivorceReply { AcceptInvite = true });
             messageBox.NoButton.Click += (o, e) => { Network.Enqueue(new C.DivorceReply { AcceptInvite = false }); messageBox.Dispose(); };
@@ -4875,7 +4918,7 @@ namespace Client.MirScenes
 
         private void MentorRequest(S.MentorRequest p)
         {
-            MirMessageBox messageBox = new MirMessageBox(string.Format("{0} (Level {1}) has requested you teach him the ways of the {2}.", p.Name, p.Level, GameScene.User.Class.ToString()), MirMessageBoxButtons.YesNo);
+            MirMessageBox messageBox = new MirMessageBox(string.Format("{0} (等级 {1} 职业{2}) 邀请和你建立师徒关系.", p.Name, p.Level, GameScene.User.Class.ToString()), MirMessageBoxButtons.YesNo);
 
             messageBox.YesButton.Click += (o, e) => Network.Enqueue(new C.MentorReply { AcceptInvite = true });
             messageBox.NoButton.Click += (o, e) => { Network.Enqueue(new C.MentorReply { AcceptInvite = false }); messageBox.Dispose(); };
@@ -4955,7 +4998,7 @@ namespace Client.MirScenes
 
         private void TradeRequest(S.TradeRequest p)
         {
-            MirMessageBox messageBox = new MirMessageBox(string.Format("Player {0} has requested to trade with you.", p.Name), MirMessageBoxButtons.YesNo);
+            MirMessageBox messageBox = new MirMessageBox(string.Format("玩家 {0} 向你发起交易请求.", p.Name), MirMessageBoxButtons.YesNo);
 
             messageBox.YesButton.Click += (o, e) => Network.Enqueue(new C.TradeReply { AcceptInvite = true });
             messageBox.NoButton.Click += (o, e) => { Network.Enqueue(new C.TradeReply { AcceptInvite = false }); messageBox.Dispose(); };
@@ -4993,7 +5036,7 @@ namespace Client.MirScenes
             {
                 TradeDialog.TradeReset();
 
-                MirMessageBox messageBox = new MirMessageBox("Deal cancelled.\r\nTo deal correctly you must face the other party.", MirMessageBoxButtons.OK);
+                MirMessageBox messageBox = new MirMessageBox("取消交易.\r\n 你必须面对另一方.", MirMessageBoxButtons.OK);
                 messageBox.Show();
             }
         }
@@ -5030,6 +5073,7 @@ namespace Client.MirScenes
             if (cell != null)
                 cell.Locked = p.Locked;
         }
+        //觉醒装备么
         private void Awakening(S.Awakening p)
         {
             if (NPCAwakeDialog.Visible)
@@ -5067,19 +5111,19 @@ namespace Client.MirScenes
             switch (p.result)
             {
                 case -4:
-                    messageBox = new MirMessageBox("You have not supplied enough materials.", MirMessageBoxButtons.OK);
+                    messageBox = new MirMessageBox("你还没有提供足够的材料.", MirMessageBoxButtons.OK);
                     MapControl.AwakeningAction = false;
                     break;
                 case -3:
-                    messageBox = new MirMessageBox("You do not have enough gold.", MirMessageBoxButtons.OK);
+                    messageBox = new MirMessageBox("你没有足够的金币.", MirMessageBoxButtons.OK);
                     MapControl.AwakeningAction = false;
                     break;
                 case -2:
-                    messageBox = new MirMessageBox("Awakening already at maximum level.", MirMessageBoxButtons.OK);
+                    messageBox = new MirMessageBox("觉醒已经达到最高水平.", MirMessageBoxButtons.OK);
                     MapControl.AwakeningAction = false;
                     break;
                 case -1:
-                    messageBox = new MirMessageBox("Cannot awaken this item.", MirMessageBoxButtons.OK);
+                    messageBox = new MirMessageBox("无法觉醒这个物品.", MirMessageBoxButtons.OK);
                     MapControl.AwakeningAction = false;
                     break;
                 case 0:
@@ -5128,7 +5172,7 @@ namespace Client.MirScenes
 
         private void MailSendRequest(S.MailSendRequest p)
         {
-            MirInputBox inputBox = new MirInputBox("Please enter the name of the person you would like to mail.");
+            MirInputBox inputBox = new MirInputBox("请输入您想发送邮件的玩家名称.");
 
             inputBox.OKButton.Click += (o1, e1) =>
             {
@@ -5162,17 +5206,19 @@ namespace Client.MirScenes
 
             GameScene.Scene.MailComposeParcelDialog.Hide();
         }
-
+        //邮件包裹？
         private void ParcelCollected(S.ParcelCollected p)
         {
             switch(p.Result)
             {
                 case -1:
-                    MirMessageBox messageBox = new MirMessageBox(string.Format("No parcels to collect."), MirMessageBoxButtons.OK);
+                    //MirMessageBox messageBox = new MirMessageBox(string.Format("No parcels to collect."), MirMessageBoxButtons.OK);
+                    MirMessageBox messageBox = new MirMessageBox(string.Format("没有包裹."), MirMessageBoxButtons.OK);
                     messageBox.Show();
                     break;
                 case 0:
-                    messageBox = new MirMessageBox(string.Format("All parcels have been collected."), MirMessageBoxButtons.OK);
+                    //messageBox = new MirMessageBox(string.Format("All parcels have been collected."), MirMessageBoxButtons.OK);
+                    messageBox = new MirMessageBox(string.Format("没有包裹等待接受."), MirMessageBoxButtons.OK);
                     messageBox.Show();
                     break;
                 case 1:
@@ -5235,24 +5281,24 @@ namespace Client.MirScenes
                 return;
             }
         }
-
+        //重生
         private void RequestReincarnation()
         {
             if (CMain.Time > User.DeadTime && User.CurrentAction == MirAction.Dead)
             {
-                MirMessageBox messageBox = new MirMessageBox("Would you like to be revived?", MirMessageBoxButtons.YesNo);
+                MirMessageBox messageBox = new MirMessageBox("是否重生?", MirMessageBoxButtons.YesNo);
 
                 messageBox.YesButton.Click += (o, e) => Network.Enqueue(new C.AcceptReincarnation());
 
                 messageBox.Show();
             }
         }
-
+        //
         private void NewIntelligentCreature(S.NewIntelligentCreature p)
         {
             User.IntelligentCreatures.Add(p.Creature);
 
-            MirInputBox inputBox = new MirInputBox("Please give your creature a name.");
+            MirInputBox inputBox = new MirInputBox("请给你的宠物起个名字.");
             inputBox.InputTextBox.Text = GameScene.User.IntelligentCreatures[User.IntelligentCreatures.Count-1].CustomName;
             inputBox.OKButton.Click += (o1, e1) =>
             {
@@ -5426,6 +5472,7 @@ namespace Client.MirScenes
                 return;
             }
         }
+
         public static void Bind(UserItem item)
         {
             for (int i = 0; i < ItemInfoList.Count; i++)
@@ -5446,7 +5493,7 @@ namespace Client.MirScenes
                 return;
             }
         }
-
+        //绑定任务?
         public static void BindQuest(ClientQuestProgress quest)
         {
             for (int i = 0; i < QuestInfoList.Count; i++)
@@ -5459,22 +5506,7 @@ namespace Client.MirScenes
             }
         }
 
-        public Color GradeNameColor(ItemGrade grade)
-        {
-            switch (grade)
-            {
-                case ItemGrade.Common:
-                    return Color.Yellow;
-                case ItemGrade.Rare:
-                    return Color.DeepSkyBlue;
-                case ItemGrade.Legendary:
-                    return Color.DarkOrange;
-                case ItemGrade.Mythical:
-                    return Color.Plum;
-                default:
-                    return Color.Yellow;
-            }
-        }
+       
 
         public void DisposeItemLabel()
         {
@@ -5500,23 +5532,25 @@ namespace Client.MirScenes
                 GuildBuffLabel.Dispose();
             GuildBuffLabel = null;
         }
-
-        public MirControl NameInfoLabel(UserItem item, bool Inspect = false)
+        //以下方法全部是对物品进行显示的，这个有点复杂了。
+        private MirControl NameInfoLabel(UserItem item, bool Inspect = false)
         {
-            ushort level = Inspect ? InspectDialog.Level : MapObject.User.Level;
-            MirClass job = Inspect ? InspectDialog.Class : MapObject.User.Class;
-            HoverItem = item;
-            ItemInfo realItem = Functions.GetRealItem(item.Info, level, job, ItemInfoList);
+            //这几行有个毛用啊？
+            //ushort level = Inspect ? InspectDialog.Level : MapObject.User.Level;
+            //MirClass job = Inspect ? InspectDialog.Class : MapObject.User.Class;
+            //HoverItem = item;
+            //ItemInfo realItem = Functions.GetRealItem(item.Info, level, job, ItemInfoList);
 
             MirLabel nameLabel = new MirLabel
             {
                 AutoSize = true,
-                ForeColour = GradeNameColor(HoverItem.Info.Grade),
+                ForeColour = HoverItem.Info.getNameColor(),
                 Location = new Point(4, 4),
                 OutLine = true,
                 Parent = ItemLabel,
-                Text = HoverItem.Info.Grade != ItemGrade.None ? HoverItem.Info.FriendlyName + "\n" + HoverItem.Info.Grade.ToString() : 
-                (HoverItem.Info.Type == ItemType.Pets && HoverItem.Info.Shape == 26 && HoverItem.Info.Effect != 7) ? "WonderDrug" : HoverItem.Info.FriendlyName,
+                
+                Text = HoverItem.Info.Grade != ItemGrade.None ? HoverItem.Info.FriendlyName + "\n" + NameChange.getItemGrade(HoverItem.Info.Grade) : 
+                (HoverItem.Info.Type == ItemType.Pets && HoverItem.Info.Shape == 26 && HoverItem.Info.Effect != 7) ? "药剂" : HoverItem.Info.FriendlyName,
             };
 
             if (HoverItem.RefineAdded > 0)
@@ -5529,27 +5563,27 @@ namespace Client.MirScenes
 
             if (HoverItem.Info.StackSize > 1)
             {
-                text += string.Format(" Count {0}", HoverItem.Count);
+                text += string.Format(" 数量 {0}", HoverItem.Count);
             }
 
             if (HoverItem.Info.Durability > 0)
             {
                 switch (HoverItem.Info.Type)
                 {
-                    case ItemType.Amulet:
-                        text += string.Format(" Usage {0}/{1}", HoverItem.CurrentDura, HoverItem.MaxDura);
+                    case ItemType.Amulet://护身符
+                        text += string.Format(" 数量 {0}/{1}", HoverItem.CurrentDura, HoverItem.MaxDura);
                         break;
-                    case ItemType.Ore:
-                        text += string.Format(" Purity {0}", Math.Round(HoverItem.CurrentDura / 1000M));
+                    case ItemType.Ore://矿石
+                        text += string.Format(" 纯度 {0}", Math.Round(HoverItem.CurrentDura / 1000M));
                         break;
-                    case ItemType.Meat:
-                        text += string.Format(" Quality {0}", Math.Round(HoverItem.CurrentDura / 1000M));
+                    case ItemType.Meat://肉
+                        text += string.Format(" 品质 {0}", Math.Round(HoverItem.CurrentDura / 1000M));
                         break;
-                    case ItemType.Mount:
-                        text += string.Format(" Loyalty {0} / {1}", HoverItem.CurrentDura, HoverItem.MaxDura);
+                    case ItemType.Mount://马鞍
+                        text += string.Format(" 忠诚 {0} / {1}", HoverItem.CurrentDura, HoverItem.MaxDura);
                         break;
-                    case ItemType.Food:
-                        text += string.Format(" Nutrition {0}", HoverItem.CurrentDura);
+                    case ItemType.Food://食物
+                        text += string.Format(" 营养 {0}", HoverItem.CurrentDura);
                         break;
                     case ItemType.Gem:
                         break;
@@ -5561,11 +5595,11 @@ namespace Client.MirScenes
                         if (HoverItem.Info.Shape == 26)//WonderDrug
                         {
                             string strTime = Functions.PrintTimeSpanFromSeconds((HoverItem.CurrentDura * 3600), false);
-                            text += "\n" + string.Format(" Duration {0}", strTime);
+                            text += "\n" + string.Format(" 持续时间 {0}", strTime);
                         }
                         break;
                     default:
-                        text += string.Format(" Durability {0}/{1}", Math.Round(HoverItem.CurrentDura / 1000M),
+                        text += string.Format(" 耐久 {0}/{1}", Math.Round(HoverItem.CurrentDura / 1000M),
                                                    Math.Round(HoverItem.MaxDura / 1000M));
                         break;
                 }
@@ -5575,12 +5609,12 @@ namespace Client.MirScenes
             if (HoverItem.WeddingRing == -1)
             {
                 WedRingName = HoverItem.Info.Type.ToString() +
-                "\n" + "W " + HoverItem.Weight + text;
+                "\n" + "重量 " + HoverItem.Weight + text;
             }
             else
             {
-                WedRingName = "Wedding Ring" +
-                "\n" + "W " + HoverItem.Weight + text;
+                WedRingName = "结婚戒指" +
+                "\n" + "重量 " + HoverItem.Weight + text;
             }
 
             MirLabel etcLabel = new MirLabel
@@ -5612,7 +5646,8 @@ namespace Client.MirScenes
 
             return outLine;
         }
-        public MirControl AttackInfoLabel(UserItem item, bool Inspect = false)
+        //各种攻击属性的显示
+        private MirControl AttackInfoLabel(UserItem item, bool Inspect = false)
         {
             ushort level = Inspect ? InspectDialog.Level : MapObject.User.Level;
             MirClass job = Inspect ? InspectDialog.Class : MapObject.User.Class;
@@ -5656,7 +5691,7 @@ namespace Client.MirScenes
             if (minValue > 0 &&  realItem.Type == ItemType.Gem)
             {
                 count++;
-                text = string.Format("Adds {0}Durability", minValue / 1000);
+                text = string.Format("增加 {0}耐久", minValue / 1000);
                 MirLabel DuraLabel = new MirLabel
                 {
                     AutoSize = true,
@@ -5673,7 +5708,7 @@ namespace Client.MirScenes
 
             #endregion
 
-            #region DC
+            #region DC 攻击
             minValue = realItem.MinDC;
             maxValue = realItem.MaxDC;
             addValue = (!HoverItem.Info.NeedIdentify || HoverItem.Identified) ? HoverItem.DC : 0;
@@ -5682,9 +5717,9 @@ namespace Client.MirScenes
             {
                 count++;
                 if (HoverItem.Info.Type != ItemType.Gem)
-                    text = string.Format(addValue > 0 ? "DC + {0}~{1} (+{2})" : "DC + {0}~{1}", minValue, maxValue + addValue, addValue);
+                    text = string.Format(addValue > 0 ? "攻击 + {0}~{1} (+{2})" : "攻击 + {0}~{1}", minValue, maxValue + addValue, addValue);
                 else
-                    text = string.Format("Adds {0}DC",minValue + maxValue + addValue);
+                    text = string.Format("增加 {0}攻击",minValue + maxValue + addValue);
                 MirLabel DCLabel = new MirLabel
                 {
                     AutoSize = true,
@@ -5702,7 +5737,7 @@ namespace Client.MirScenes
 
             #endregion
 
-            #region MC
+            #region MC 魔法
 
             minValue = realItem.MinMC;
             maxValue = realItem.MaxMC;
@@ -5712,9 +5747,9 @@ namespace Client.MirScenes
             {
                 count++;
                 if (HoverItem.Info.Type != ItemType.Gem)
-                    text = string.Format(addValue > 0 ? "MC + {0}~{1} (+{2})" : "MC + {0}~{1}", minValue, maxValue + addValue, addValue);
+                    text = string.Format(addValue > 0 ? "魔法 + {0}~{1} (+{2})" : "魔法 + {0}~{1}", minValue, maxValue + addValue, addValue);
                 else
-                    text = string.Format("Adds {0}MC", minValue + maxValue + addValue);
+                    text = string.Format("增加 {0}魔法", minValue + maxValue + addValue);
                 MirLabel MCLabel = new MirLabel
                 {
                     AutoSize = true,
@@ -5732,7 +5767,7 @@ namespace Client.MirScenes
 
             #endregion
 
-            #region SC
+            #region SC 道术
 
             minValue = realItem.MinSC;
             maxValue = realItem.MaxSC;
@@ -5742,9 +5777,9 @@ namespace Client.MirScenes
             {
                 count++;
                 if (HoverItem.Info.Type != ItemType.Gem)
-                    text = string.Format(addValue > 0 ? "SC + {0}~{1} (+{2})" : "SC + {0}~{1}", minValue, maxValue + addValue, addValue);
+                    text = string.Format(addValue > 0 ? "道术 + {0}~{1} (+{2})" : "道术 + {0}~{1}", minValue, maxValue + addValue, addValue);
                 else
-                    text = string.Format("Adds {0}SC", minValue + maxValue + addValue);
+                    text = string.Format("增加 {0}道术", minValue + maxValue + addValue);
                 MirLabel SCLabel = new MirLabel
                 {
                     AutoSize = true,
@@ -5762,7 +5797,7 @@ namespace Client.MirScenes
 
             #endregion
 
-            #region LUCK / SUCCESS
+            #region LUCK / SUCCESS 幸运
 
             minValue = realItem.Luck;
             maxValue = 0;
@@ -5774,15 +5809,15 @@ namespace Client.MirScenes
 
                 if(realItem.Type == ItemType.Pets && realItem.Shape == 28)
                 {
-                    text = string.Format("BagWeight + {0}% ", minValue + addValue);
+                    text = string.Format("负重 + {0}% ", minValue + addValue);
                 }
                 else if (realItem.Type == ItemType.Potion && realItem.Shape == 4)
                 {
-                    text = string.Format("Exp + {0}% ", minValue + addValue);
+                    text = string.Format("经验 + {0}% ", minValue + addValue);
                 }
                 else
                 {
-                    text = string.Format(minValue + addValue > 0 ? "Luck + {0}" : "Curse + {0}", Math.Abs(minValue + addValue));
+                    text = string.Format(minValue + addValue > 0 ? "幸运 + {0}" : "诅咒 + {0}", Math.Abs(minValue + addValue));
                 }
 
                 MirLabel LUCKLabel = new MirLabel
@@ -5813,9 +5848,9 @@ namespace Client.MirScenes
             {
                 count++;
                 if (HoverItem.Info.Type != ItemType.Gem)
-                    text = string.Format(addValue > 0 ? "Accuracy: + {0} (+{1})" : "Accuracy: + {0}", minValue + addValue, addValue);
+                    text = string.Format(addValue > 0 ? "准确: + {0} (+{1})" : "准确: + {0}", minValue + addValue, addValue);
                 else
-                    text = string.Format("Adds {0}Accuracy", minValue + maxValue + addValue);
+                    text = string.Format("加 {0}准确", minValue + maxValue + addValue);
                 MirLabel ACCLabel = new MirLabel
                 {
                     AutoSize = true,
@@ -5859,7 +5894,7 @@ namespace Client.MirScenes
 
             #endregion
 
-            #region ASPEED
+            #region ASPEED 攻速
 
             minValue = realItem.AttackSpeed;
             maxValue = 0;
@@ -5874,11 +5909,11 @@ namespace Client.MirScenes
                 {
                     string negative = "+";
                     if (addValue < 0) negative = "";
-                    text = string.Format(addValue != 0 ? "A.Speed: " + plus + "{0} ({2}{1})" : "A.Speed: " + plus + "{0}", minValue + addValue, addValue, negative);
+                    text = string.Format(addValue != 0 ? "攻速: " + plus + "{0} ({2}{1})" : "攻速: " + plus + "{0}", minValue + addValue, addValue, negative);
                     //text = string.Format(addValue > 0 ? "A.Speed: + {0} (+{1})" : "A.Speed: + {0}", minValue + addValue, addValue);
                 }
                 else
-                    text = string.Format("Adds {0}A.Speed", minValue + maxValue + addValue);
+                    text = string.Format("加 {0}攻速", minValue + maxValue + addValue);
                 MirLabel ASPEEDLabel = new MirLabel
                 {
                     AutoSize = true,
@@ -5896,7 +5931,7 @@ namespace Client.MirScenes
 
             #endregion
 
-            #region FREEZING
+            #region FREEZING 这个是什么，麻痹？冰冻？
 
             minValue = realItem.Freezing;
             maxValue = 0;
@@ -5906,9 +5941,9 @@ namespace Client.MirScenes
             {
                 count++;
                 if (HoverItem.Info.Type != ItemType.Gem)
-                    text = string.Format(addValue > 0 ? "Freezing: + {0} (+{1})" : "Freezing: + {0}", minValue + addValue, addValue);
+                    text = string.Format(addValue > 0 ? "冰冻: + {0} (+{1})" : "冰冻: + {0}", minValue + addValue, addValue);
                 else
-                    text = string.Format("Adds {0}Freezing", minValue + maxValue + addValue);
+                    text = string.Format("加 {0}冰冻", minValue + maxValue + addValue);
                 MirLabel FREEZINGLabel = new MirLabel
                 {
                     AutoSize = true,
@@ -5936,9 +5971,9 @@ namespace Client.MirScenes
             {
                 count++;
                 if (HoverItem.Info.Type != ItemType.Gem)
-                    text = string.Format(addValue > 0 ? "Poison: + {0} (+{1})" : "Poison: + {0}", minValue + addValue, addValue);
+                    text = string.Format(addValue > 0 ? "毒性: + {0} (+{1})" : "毒性: + {0}", minValue + addValue, addValue);
                 else
-                    text = string.Format("Adds {0}Poison", minValue + maxValue + addValue);
+                    text = string.Format("加 {0}毒性", minValue + maxValue + addValue);
                 MirLabel POISONLabel = new MirLabel
                 {
                     AutoSize = true,
@@ -5956,7 +5991,7 @@ namespace Client.MirScenes
 
             #endregion
 
-            #region CRITICALRATE / FLEXIBILITY
+            #region CRITICALRATE / FLEXIBILITY 暴击、敏捷
 
             minValue = realItem.CriticalRate;
             maxValue = 0;
@@ -5973,12 +6008,12 @@ namespace Client.MirScenes
                     OutLine = true,
                     Parent = ItemLabel,
                     //Text = string.Format("Critical Chance + {0}", minValue + addValue)
-                    Text = string.Format(addValue > 0 ? "Critical Chance: + {0} (+{1})" : "Critical Chance: + {0}", minValue + addValue, addValue)
+                    Text = string.Format(addValue > 0 ? "暴击率: + {0} (+{1})" : "暴击率: + {0}", minValue + addValue, addValue)
                 };
 
                 if(fishingItem)
                 {
-                    CRITICALRATELabel.Text = string.Format(addValue > 0 ? "Flexibility: + {0} (+{1})" : "Flexibility: + {0}", minValue + addValue, addValue);
+                    CRITICALRATELabel.Text = string.Format(addValue > 0 ? "敏捷: + {0} (+{1})" : "敏捷: + {0}", minValue + addValue, addValue);
                 }
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, CRITICALRATELabel.DisplayRectangle.Right + 4),
@@ -6004,7 +6039,7 @@ namespace Client.MirScenes
                     OutLine = true,
                     Parent = ItemLabel,
                     //Text = string.Format("Critical Damage + {0}", minValue + addValue)
-                    Text = string.Format(addValue > 0 ? "Critical Damage: + {0} (+{1})" : "Critical Damage: + {0}", minValue + addValue, addValue)
+                    Text = string.Format(addValue > 0 ? "暴击伤害: + {0} (+{1})" : "暴击伤害: + {0}", minValue + addValue, addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, CRITICALDAMAGELabel.DisplayRectangle.Right + 4),
@@ -6013,7 +6048,7 @@ namespace Client.MirScenes
 
             #endregion
 
-            #region Reflect
+            #region Reflect 反射？反弹几率？
 
             minValue = realItem.Reflect;
             maxValue = 0;
@@ -6029,7 +6064,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Reflect chance: {0}", minValue)
+                    Text = string.Format("反伤害: {0}", minValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, ReflectLabel.DisplayRectangle.Right + 4),
@@ -6038,7 +6073,7 @@ namespace Client.MirScenes
 
             #endregion
 
-            #region Hpdrain
+            #region Hpdrain 吸血
 
             minValue = realItem.HpDrainRate;
             maxValue = 0;
@@ -6054,7 +6089,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("HP Drain Rate: {0}%", minValue)
+                    Text = string.Format("吸血: {0}%", minValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, HPdrainLabel.DisplayRectangle.Right + 4),
@@ -6089,7 +6124,8 @@ namespace Client.MirScenes
             }
             return null;
         }
-        public MirControl DefenceInfoLabel(UserItem item, bool Inspect = false)
+        //各种防御属性的显示
+        private MirControl DefenceInfoLabel(UserItem item, bool Inspect = false)
         {
             ushort level = Inspect ? InspectDialog.Level : MapObject.User.Level;
             MirClass job = Inspect ? InspectDialog.Class : MapObject.User.Class;
@@ -6137,9 +6173,9 @@ namespace Client.MirScenes
             {
                 count++;
                 if (HoverItem.Info.Type != ItemType.Gem)
-                    text = string.Format(addValue > 0 ? "AC + {0}~{1} (+{2})" : "AC + {0}~{1}", minValue, maxValue + addValue, addValue);
+                    text = string.Format(addValue > 0 ? "防御 + {0}~{1} (+{2})" : "防御 + {0}~{1}", minValue, maxValue + addValue, addValue);
                 else
-                    text = string.Format("Adds {0} AC", minValue + maxValue + addValue);
+                    text = string.Format("加 {0} 防御", minValue + maxValue + addValue);
                 MirLabel ACLabel = new MirLabel
                 {
                     AutoSize = true,
@@ -6150,7 +6186,7 @@ namespace Client.MirScenes
                     //Text = string.Format("AC + {0}~{1}", minValue, maxValue + addValue)
                     Text = text
                 };
-
+                //钓鱼的，不用了
                 if (fishingItem)
                 {
                     if (HoverItem.Info.Type == ItemType.Float)
@@ -6183,9 +6219,9 @@ namespace Client.MirScenes
             {
                 count++;
                 if (HoverItem.Info.Type != ItemType.Gem)
-                    text = string.Format(addValue > 0 ? "MAC + {0}~{1} (+{2})" : "MAC + {0}~{1}", minValue, maxValue + addValue, addValue);
+                    text = string.Format(addValue > 0 ? "魔御 + {0}~{1} (+{2})" : "魔御 + {0}~{1}", minValue, maxValue + addValue, addValue);
                 else
-                    text = string.Format("Adds {0} MAC", minValue + maxValue + addValue);
+                    text = string.Format("加 {0} 魔御", minValue + maxValue + addValue);
                 MirLabel MACLabel = new MirLabel
                 {
                     AutoSize = true,
@@ -6226,8 +6262,8 @@ namespace Client.MirScenes
                     Parent = ItemLabel,
                     //Text = string.Format(realItem.Type == ItemType.Potion ? "HP + {0} Recovery" : "MAXHP + {0}", minValue + addValue)
                     Text = realItem.Type == ItemType.Potion ? 
-                    string.Format(addValue > 0 ? "HP + {0} Recovery (+{1})" : "HP + {0} Recovery", minValue + addValue, addValue)
-                    : string.Format(addValue > 0 ? "Max HP + {0} (+{1})" : "Max HP + {0}", minValue + addValue, addValue)
+                    string.Format(addValue > 0 ? "HP + {0} 恢复 (+{1})" : "HP + {0} 恢复", minValue + addValue, addValue)
+                    : string.Format(addValue > 0 ? "最大 HP + {0} (+{1})" : "最大 HP + {0}", minValue + addValue, addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, MAXHPLabel.DisplayRectangle.Right + 4),
@@ -6254,8 +6290,8 @@ namespace Client.MirScenes
                     Parent = ItemLabel,
                     //Text = string.Format(realItem.Type == ItemType.Potion ? "MP + {0} Recovery" : "MAXMP + {0}", minValue + addValue)
                     Text = realItem.Type == ItemType.Potion ? 
-                    string.Format(addValue > 0 ? "MP + {0} Recovery (+{1})" : "MP + {0} Recovery", minValue + addValue, addValue)
-                    : string.Format(addValue > 0 ? "Max MP + {0} (+{1})" : "Max MP + {0}", minValue + addValue, addValue)
+                    string.Format(addValue > 0 ? "MP + {0} 恢复 (+{1})" : "MP + {0} 恢复", minValue + addValue, addValue)
+                    : string.Format(addValue > 0 ? "最大 MP + {0} (+{1})" : "最大 MP + {0}", minValue + addValue, addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, MAXMPLabel.DisplayRectangle.Right + 4),
@@ -6280,7 +6316,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Max HP + {0}%", minValue + addValue)
+                    Text = string.Format("最大 HP + {0}%", minValue + addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, MAXHPRATELabel.DisplayRectangle.Right + 4),
@@ -6305,7 +6341,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Max MP + {0}%", minValue + addValue)
+                    Text = string.Format("最大 MP + {0}%", minValue + addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, MAXMPRATELabel.DisplayRectangle.Right + 4),
@@ -6330,7 +6366,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Max AC + {0}%", minValue + addValue)
+                    Text = string.Format("最大 防御 + {0}%", minValue + addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, MAXACRATE.DisplayRectangle.Right + 4),
@@ -6355,7 +6391,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Max MAC + {0}%", minValue + addValue)
+                    Text = string.Format("最大 魔御 + {0}%", minValue + addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, MAXMACRATELabel.DisplayRectangle.Right + 4),
@@ -6381,7 +6417,7 @@ namespace Client.MirScenes
                     OutLine = true,
                     Parent = ItemLabel,
                     //Text = string.Format("HealthRecovery + {0}", minValue + addValue)
-                    Text = string.Format(addValue > 0 ? "Health Recovery + {0} (+{1})" : "Health Recovery + {0}", minValue + addValue, addValue)
+                    Text = string.Format(addValue > 0 ? "HP 恢复 + {0} (+{1})" : "HP 恢复 + {0}", minValue + addValue, addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, HEALTH_RECOVERYLabel.DisplayRectangle.Right + 4),
@@ -6407,7 +6443,7 @@ namespace Client.MirScenes
                     OutLine = true,
                     Parent = ItemLabel,
                     //Text = string.Format("ManaRecovery + {0}", minValue + addValue)
-                    Text = string.Format(addValue > 0 ? "Mana Recovery + {0} (+{1})" : "Mana Recovery + {0}", minValue + addValue, addValue)
+                    Text = string.Format(addValue > 0 ? "MP 恢复 + {0} (+{1})" : "MP 恢复 + {0}", minValue + addValue, addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, MANA_RECOVERYLabel.DisplayRectangle.Right + 4),
@@ -6433,7 +6469,7 @@ namespace Client.MirScenes
                     OutLine = true,
                     Parent = ItemLabel,
                     //Text = string.Format("Poison Recovery + {0}", minValue + addValue)
-                    Text = string.Format(addValue > 0 ? "Poison Recovery + {0} (+{1})" : "Poison Recovery + {0}", minValue + addValue, addValue)
+                    Text = string.Format(addValue > 0 ? "中毒 恢复 + {0} (+{1})" : "中毒 恢复 + {0}", minValue + addValue, addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, POISON_RECOVERYabel.DisplayRectangle.Right + 4),
@@ -6459,7 +6495,7 @@ namespace Client.MirScenes
                     OutLine = true,
                     Parent = ItemLabel,
                     //Text = string.Format("Agility + {0}", minValue + addValue)
-                    Text = string.Format(addValue > 0 ? "Agility + {0} (+{1})" : "Agility + {0}", minValue + addValue, addValue)
+                    Text = string.Format(addValue > 0 ? "敏捷 + {0} (+{1})" : "敏捷 + {0}", minValue + addValue, addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, AGILITYLabel.DisplayRectangle.Right + 4),
@@ -6504,9 +6540,9 @@ namespace Client.MirScenes
             {
                 count++;
                 if (HoverItem.Info.Type != ItemType.Gem)
-                    text = string.Format(addValue > 0 ? "Poison Resist + {0} (+{1})" : "Poison Resist + {0}", minValue + addValue, addValue);
+                    text = string.Format(addValue > 0 ? "中毒抗性 + {0} (+{1})" : "中毒抗性 + {0}", minValue + addValue, addValue);
                 else
-                    text = string.Format("Adds {0} Poison Resist", minValue + maxValue + addValue);
+                    text = string.Format("加 {0} 中毒抗性", minValue + maxValue + addValue);
                 MirLabel POISON_RESISTLabel = new MirLabel
                 {
                     AutoSize = true,
@@ -6534,9 +6570,9 @@ namespace Client.MirScenes
             {
                 count++;
                 if (HoverItem.Info.Type != ItemType.Gem)
-                    text = string.Format(addValue > 0 ? "Magic Resist + {0} (+{1})" : "Magic Resist + {0}", minValue + addValue, addValue);
+                    text = string.Format(addValue > 0 ? "魔法抗性 + {0} (+{1})" : "魔法抗性 + {0}", minValue + addValue, addValue);
                 else
-                    text = string.Format("Adds {0} Magic Resist", minValue + maxValue + addValue);
+                    text = string.Format("加 {0} 魔法抗性", minValue + maxValue + addValue);
                 MirLabel MAGIC_RESISTLabel = new MirLabel
                 {
                     AutoSize = true,
@@ -6580,7 +6616,8 @@ namespace Client.MirScenes
             }
             return null;
         }
-        public MirControl WeightInfoLabel(UserItem item, bool Inspect = false)
+        //负重，腕力，免助跑，
+        private MirControl WeightInfoLabel(UserItem item, bool Inspect = false)
         {
             ushort level = Inspect ? InspectDialog.Level : MapObject.User.Level;
             MirClass job = Inspect ? InspectDialog.Class : MapObject.User.Class;
@@ -6611,7 +6648,7 @@ namespace Client.MirScenes
                     OutLine = true,
                     Parent = ItemLabel,
                     //Text = string.Format("Hand Weight + {0}", minValue + addValue)
-                    Text = string.Format(addValue > 0 ? "Hand Weight + {0} (+{1})" : "Hand Weight + {0}", minValue + addValue, addValue)
+                    Text = string.Format(addValue > 0 ? "腕力 + {0} (+{1})" : "腕力 + {0}", minValue + addValue, addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, HANDWEIGHTLabel.DisplayRectangle.Right + 4),
@@ -6620,7 +6657,7 @@ namespace Client.MirScenes
 
             #endregion
 
-            #region WEARWEIGHT
+            #region WEARWEIGHT 这个是穿戴物品的力量？
 
             minValue = realItem.WearWeight;
             maxValue = 0;
@@ -6637,7 +6674,7 @@ namespace Client.MirScenes
                     OutLine = true,
                     Parent = ItemLabel,
                     //Text = string.Format("Wear Weight + {0}", minValue + addValue)
-                    Text = string.Format(addValue > 0 ? "Wear Weight + {0} (+{1})" : "Wear Weight + {0}", minValue + addValue, addValue)
+                    Text = string.Format(addValue > 0 ? "负重 + {0} (+{1})" : "负重 + {0}", minValue + addValue, addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, WEARWEIGHTLabel.DisplayRectangle.Right + 4),
@@ -6663,7 +6700,7 @@ namespace Client.MirScenes
                     OutLine = true,
                     Parent = ItemLabel,
                     //Text = string.Format("Bag Weight + {0}", minValue + addValue)
-                    Text = string.Format(addValue > 0 ? "Bag Weight + {0} (+{1})" : "Bag Weight + {0}", minValue + addValue, addValue)
+                    Text = string.Format(addValue > 0 ? "背包负重 + {0} (+{1})" : "背包负重 + {0}", minValue + addValue, addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, BAGWEIGHTLabel.DisplayRectangle.Right + 4),
@@ -6671,7 +6708,7 @@ namespace Client.MirScenes
             }
 
             #endregion
-
+            //免助跑
             #region FASTRUN
             minValue = realItem.CanFastRun==true?1:0;
             maxValue = 0;
@@ -6687,7 +6724,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Instant Run")
+                    Text = string.Format("免助跑")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, BAGWEIGHTLabel.DisplayRectangle.Right + 4),
@@ -6711,7 +6748,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Time : {0}", Functions.PrintTimeSpanFromSeconds(HoverItem.Info.Durability * 60))
+                    Text = string.Format("时限 : {0}", Functions.PrintTimeSpanFromSeconds(HoverItem.Info.Durability * 60))
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, TNRLabel.DisplayRectangle.Right + 4),
@@ -6728,7 +6765,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Time : {0}", Functions.PrintTimeSpanFromSeconds(HoverItem.Info.Durability, false))
+                    Text = string.Format("时限 : {0}", Functions.PrintTimeSpanFromSeconds(HoverItem.Info.Durability, false))
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, TNRLabel.DisplayRectangle.Right + 4),
@@ -6763,7 +6800,8 @@ namespace Client.MirScenes
             }
             return null;
         }
-        public MirControl AwakeInfoLabel(UserItem item, bool Inspect = false)
+        //觉醒
+        private MirControl AwakeInfoLabel(UserItem item, bool Inspect = false)
         {
             ushort level = Inspect ? InspectDialog.Level : MapObject.User.Level;
             MirClass job = Inspect ? InspectDialog.Class : MapObject.User.Class;
@@ -6781,11 +6819,11 @@ namespace Client.MirScenes
                 MirLabel AWAKENAMELabel = new MirLabel
                 {
                     AutoSize = true,
-                    ForeColour = GradeNameColor(HoverItem.Info.Grade),
+                    ForeColour = HoverItem.Info.getNameColor(),
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("{0} Awakening({1})", HoverItem.Awake.type.ToString(), HoverItem.Awake.getAwakeLevel())
+                    Text = string.Format("{0} 觉醒({1})", HoverItem.Awake.type.ToString(), HoverItem.Awake.getAwakeLevel())
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, AWAKENAMELabel.DisplayRectangle.Right + 4),
@@ -6827,7 +6865,7 @@ namespace Client.MirScenes
                         Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                         OutLine = true,
                         Parent = ItemLabel,
-                        Text = string.Format(realItem.Type != ItemType.Armour ? "Level {0} : {1} + {2}~{3}" : "Level {0} : MAX {1} + {2}~{3}", i + 1, HoverItem.Awake.type.ToString(), HoverItem.Awake.getAwakeLevelValue(i), HoverItem.Awake.getAwakeLevelValue(i))
+                        Text = string.Format(realItem.Type != ItemType.Armour ? "等级 {0} : {1} + {2}~{3}" : "等级 {0} : 最大 {1} + {2}~{3}", i + 1, HoverItem.Awake.type.ToString(), HoverItem.Awake.getAwakeLevelValue(i), HoverItem.Awake.getAwakeLevelValue(i))
                     };
 
                     ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, AWAKE_LEVEL_VALUELabel.DisplayRectangle.Right + 4),
@@ -6863,7 +6901,7 @@ namespace Client.MirScenes
             }
             return null;
         }
-        public MirControl NeedInfoLabel(UserItem item, bool Inspect = false)
+        private MirControl NeedInfoLabel(UserItem item, bool Inspect = false)
         {
             ushort level = Inspect ? InspectDialog.Level : MapObject.User.Level;
             MirClass job = Inspect ? InspectDialog.Class : MapObject.User.Class;
@@ -6883,62 +6921,62 @@ namespace Client.MirScenes
                 switch (realItem.RequiredType)
                 {
                     case RequiredType.Level:
-                        text = string.Format("Required Level : {0}", realItem.RequiredAmount);
+                        text = string.Format("需要等级 : {0}", realItem.RequiredAmount);
                         if (MapObject.User.Level < realItem.RequiredAmount)
                             colour = Color.Red;
                         break;
                     case RequiredType.MaxAC:
-                        text = string.Format("Required AC : {0}", realItem.RequiredAmount);
+                        text = string.Format("需要防御 : {0}", realItem.RequiredAmount);
                         if (MapObject.User.MaxAC < realItem.RequiredAmount)
                             colour = Color.Red;
                         break;
                     case RequiredType.MaxMAC:
-                        text = string.Format("Required MAC : {0}", realItem.RequiredAmount);
+                        text = string.Format("需要魔御 : {0}", realItem.RequiredAmount);
                         if (MapObject.User.MaxMAC < realItem.RequiredAmount)
                             colour = Color.Red;
                         break;
                     case RequiredType.MaxDC:
-                        text = string.Format("Required DC : {0}", realItem.RequiredAmount);
+                        text = string.Format("需要攻击 : {0}", realItem.RequiredAmount);
                         if (MapObject.User.MaxDC < realItem.RequiredAmount)
                             colour = Color.Red;
                         break;
                     case RequiredType.MaxMC:
-                        text = string.Format("Required MC : {0}", realItem.RequiredAmount);
+                        text = string.Format("需要魔法 : {0}", realItem.RequiredAmount);
                         if (MapObject.User.MaxMC < realItem.RequiredAmount)
                             colour = Color.Red;
                         break;
                     case RequiredType.MaxSC:
-                        text = string.Format("Required SC : {0}", realItem.RequiredAmount);
+                        text = string.Format("需要道术 : {0}", realItem.RequiredAmount);
                         if (MapObject.User.MaxSC < realItem.RequiredAmount)
                             colour = Color.Red;
                         break;
                     case RequiredType.MaxLevel:
-                        text = string.Format("Maximum Level : {0}", realItem.RequiredAmount);
+                        text = string.Format("最高等级 : {0}", realItem.RequiredAmount);
                         if (MapObject.User.Level > realItem.RequiredAmount)
                             colour = Color.Red;
                         break;
                     case RequiredType.MinAC:
-                        text = string.Format("Required Base AC : {0}", realItem.RequiredAmount);
+                        text = string.Format("需要基础防御: {0}", realItem.RequiredAmount);
                         if (MapObject.User.MinAC < realItem.RequiredAmount)
                             colour = Color.Red;
                         break;
                     case RequiredType.MinMAC:
-                        text = string.Format("Required Base MAC : {0}", realItem.RequiredAmount);
+                        text = string.Format("需要基础魔御 : {0}", realItem.RequiredAmount);
                         if (MapObject.User.MinMAC < realItem.RequiredAmount)
                             colour = Color.Red;
                         break;
                     case RequiredType.MinDC:
-                        text = string.Format("Required Base DC : {0}", realItem.RequiredAmount);
+                        text = string.Format("需要基础攻击 : {0}", realItem.RequiredAmount);
                         if (MapObject.User.MinDC < realItem.RequiredAmount)
                             colour = Color.Red;
                         break;
                     case RequiredType.MinMC:
-                        text = string.Format("Required Base MC : {0}", realItem.RequiredAmount);
+                        text = string.Format("需要基础魔法 : {0}", realItem.RequiredAmount);
                         if (MapObject.User.MinMC < realItem.RequiredAmount)
                             colour = Color.Red;
                         break;
                     case RequiredType.MinSC:
-                        text = string.Format("Required Base SC : {0}", realItem.RequiredAmount);
+                        text = string.Format("需要基础道术 : {0}", realItem.RequiredAmount);
                         if (MapObject.User.MinSC < realItem.RequiredAmount)
                             colour = Color.Red;
                         break;
@@ -7000,7 +7038,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Class Required : {0}", realItem.RequiredClass)
+                    Text = string.Format("职业限制 : {0}", NameChange.getRequiredClass(realItem.RequiredClass))
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, CLASSLabel.DisplayRectangle.Right + 4),
@@ -7035,7 +7073,7 @@ namespace Client.MirScenes
             }
             return null;
         }
-        public MirControl BindInfoLabel(UserItem item, bool Inspect = false)
+        private MirControl BindInfoLabel(UserItem item, bool Inspect = false)
         {
             ushort level = Inspect ? InspectDialog.Level : MapObject.User.Level;
             MirClass job = Inspect ? InspectDialog.Class : MapObject.User.Class;
@@ -7058,7 +7096,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Can't drop on death")
+                    Text = string.Format("死亡不掉落")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, DONT_DEATH_DROPLabel.DisplayRectangle.Right + 4),
@@ -7079,7 +7117,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Can't drop")
+                    Text = string.Format("不能丢弃")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, DONT_DROPLabel.DisplayRectangle.Right + 4),
@@ -7100,7 +7138,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Can't upgrade")
+                    Text = string.Format("不能升级")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, DONT_UPGRADELabel.DisplayRectangle.Right + 4),
@@ -7121,7 +7159,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Can't sell")
+                    Text = string.Format("不能出售")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, DONT_SELLLabel.DisplayRectangle.Right + 4),
@@ -7142,7 +7180,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Can't trade")
+                    Text = string.Format("不能交易")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, DONT_TRADELabel.DisplayRectangle.Right + 4),
@@ -7163,7 +7201,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Can't store")
+                    Text = string.Format("不能储存")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, DONT_STORELabel.DisplayRectangle.Right + 4),
@@ -7184,7 +7222,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Can't repair")
+                    Text = string.Format("不能修理")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, DONT_REPAIRLabel.DisplayRectangle.Right + 4),
@@ -7205,7 +7243,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Can't special repair")
+                    Text = string.Format("不能特修")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, DONT_REPAIRLabel.DisplayRectangle.Right + 4),
@@ -7226,7 +7264,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Breaks on death")
+                    Text = string.Format("死亡销毁")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, DONT_REPAIRLabel.DisplayRectangle.Right + 4),
@@ -7247,7 +7285,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Destroyed when dropped")
+                    Text = string.Format("掉落销毁")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, DONT_DODLabel.DisplayRectangle.Right + 4),
@@ -7268,7 +7306,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Cannot be a weddingring")
+                    Text = string.Format("结婚不能使用")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, No_WedLabel.DisplayRectangle.Right + 4),
@@ -7326,7 +7364,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Cursed")
+                    Text = string.Format("诅咒")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, CURSEDLabel.DisplayRectangle.Right + 4),
@@ -7344,11 +7382,11 @@ namespace Client.MirScenes
                 string Text = "";
                 if (HoverItem.Info.Unique == SpecialItemMode.None)
                 {
-                    Text = "Cannot be used on any item.";
+                    Text = "不能使用在任何物品.";
                 }
                 else
                 {
-                    Text = "Can be used on: ";
+                    Text = "能使用在: ";
                 }
                 MirLabel GemUseOn = new MirLabel
                 {
@@ -7374,7 +7412,7 @@ namespace Client.MirScenes
                         Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                         OutLine = true,
                         Parent = ItemLabel,
-                        Text = "-Weapon"
+                        Text = "-武器"
                     };
 
                     ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, GemWeapon.DisplayRectangle.Right + 4),
@@ -7392,7 +7430,7 @@ namespace Client.MirScenes
                         Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                         OutLine = true,
                         Parent = ItemLabel,
-                        Text = "-Armour"
+                        Text = "-盔甲"
                     };
 
                     ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, GemArmour.DisplayRectangle.Right + 4),
@@ -7410,7 +7448,7 @@ namespace Client.MirScenes
                         Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                         OutLine = true,
                         Parent = ItemLabel,
-                        Text = "-Helmet"
+                        Text = "-头盔"
                     };
 
                     ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, Gemhelmet.DisplayRectangle.Right + 4),
@@ -7428,7 +7466,7 @@ namespace Client.MirScenes
                         Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                         OutLine = true,
                         Parent = ItemLabel,
-                        Text = "-Necklace"
+                        Text = "-项链"
                     };
 
                     ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, Gemnecklace.DisplayRectangle.Right + 4),
@@ -7446,7 +7484,7 @@ namespace Client.MirScenes
                         Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                         OutLine = true,
                         Parent = ItemLabel,
-                        Text = "-Bracelet"
+                        Text = "-手镯"
                     };
 
                     ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, GemBracelet.DisplayRectangle.Right + 4),
@@ -7464,7 +7502,7 @@ namespace Client.MirScenes
                         Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                         OutLine = true,
                         Parent = ItemLabel,
-                        Text = "-Ring"
+                        Text = "-戒指"
                     };
 
                     ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, GemRing.DisplayRectangle.Right + 4),
@@ -7482,7 +7520,7 @@ namespace Client.MirScenes
                         Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                         OutLine = true,
                         Parent = ItemLabel,
-                        Text = "-Amulet"
+                        Text = "-护身符"
                     };
 
                     ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, Gemamulet.DisplayRectangle.Right + 4),
@@ -7500,7 +7538,7 @@ namespace Client.MirScenes
                         Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                         OutLine = true,
                         Parent = ItemLabel,
-                        Text = "-Belt"
+                        Text = "-腰带"
                     };
 
                     ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, Gembelt.DisplayRectangle.Right + 4),
@@ -7518,7 +7556,7 @@ namespace Client.MirScenes
                         Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                         OutLine = true,
                         Parent = ItemLabel,
-                        Text = "-Boots"
+                        Text = "-鞋子"
                     };
 
                     ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, Gemboots.DisplayRectangle.Right + 4),
@@ -7536,7 +7574,7 @@ namespace Client.MirScenes
                         Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                         OutLine = true,
                         Parent = ItemLabel,
-                        Text = "-Stone"
+                        Text = "-石头"
                     };
 
                     ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, Gemstone.DisplayRectangle.Right + 4),
@@ -7554,7 +7592,7 @@ namespace Client.MirScenes
                         Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                         OutLine = true,
                         Parent = ItemLabel,
-                        Text = "-Candle"
+                        Text = "-蜡烛"
                     };
 
                     ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, Gemtorch.DisplayRectangle.Right + 4),
@@ -7600,7 +7638,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = remainingSeconds > 0 ? string.Format("Expires in {0}", Functions.PrintTimeSpanFromSeconds(remainingSeconds)) : "Expired"
+                    Text = remainingSeconds > 0 ? string.Format("到期 {0}", Functions.PrintTimeSpanFromSeconds(remainingSeconds)) : "过期"
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, EXPIRELabel.DisplayRectangle.Right + 4),
@@ -7620,7 +7658,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = "Item rented from: " + HoverItem.RentalInformation.OwnerName
+                    Text = "租用: " + HoverItem.RentalInformation.OwnerName
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, OWNERLabel.DisplayRectangle.Right + 4),
@@ -7636,7 +7674,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = remainingTime > 0 ? string.Format("Rental expires in: {0}", Functions.PrintTimeSpanFromSeconds(remainingTime)) : "Rental expired"
+                    Text = remainingTime > 0 ? string.Format("租期: {0}", Functions.PrintTimeSpanFromSeconds(remainingTime)) : "租期已满"
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, RENTALLabel.DisplayRectangle.Right + 4),
@@ -7653,7 +7691,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = remainingTime > 0 ? string.Format("Rental lock expires in: {0}", Functions.PrintTimeSpanFromSeconds(remainingTime)) : "Rental lock expired"
+                    Text = remainingTime > 0 ? string.Format("锁定租期: {0}", Functions.PrintTimeSpanFromSeconds(remainingTime)) : "锁定租期已满"
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, RentalLockLabel.DisplayRectangle.Right + 4),
@@ -7686,7 +7724,7 @@ namespace Client.MirScenes
             }
             return null;
         }
-        public MirControl OverlapInfoLabel(UserItem item, bool Inspect = false)
+        private MirControl OverlapInfoLabel(UserItem item, bool Inspect = false)
         {
             ushort level = Inspect ? InspectDialog.Level : MapObject.User.Level;
             MirClass job = Inspect ? InspectDialog.Class : MapObject.User.Class;
@@ -7707,14 +7745,14 @@ namespace Client.MirScenes
                 switch (realItem.Shape)
                 {
                     case 1:
-                        text = "Hold CTRL and left click to repair weapons.";
+                        text = "保持CTRL并左键单击以修复武器.";
                         break;
                     case 2:
-                        text = "Hold CTRL and left click to repair armour\nand accessory items.";
+                        text = "按住CTRL并点击左键修复盔甲\n 和其他物品.";
                         break;
                     case 3:
                     case 4:
-                        text = "Hold CTRL and left click to combine with an item.";
+                        text = "保持CTRL并左键单击与物品合并.";
                         break;
                 }
                 count++;
@@ -7746,7 +7784,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Max Combine Count : {0}\nShift + Left click to split the stack", realItem.StackSize)
+                    Text = string.Format("最大合并 : {0}\nShift +左键单击以拆分物品", realItem.StackSize)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, SPLITUPLabel.DisplayRectangle.Right + 4),
@@ -7781,7 +7819,8 @@ namespace Client.MirScenes
             }
             return null;
         }
-        public MirControl StoryInfoLabel(UserItem item, bool Inspect = false)
+        //物品的故事，物品描述
+        private MirControl StoryInfoLabel(UserItem item, bool Inspect = false)
         {
             ushort level = Inspect ? InspectDialog.Level : MapObject.User.Level;
             MirClass job = Inspect ? InspectDialog.Class : MapObject.User.Class;
@@ -7793,39 +7832,38 @@ namespace Client.MirScenes
             int count = 0;
 
             #region TOOLTIP
-
             if (realItem.Type == ItemType.Pets && realItem.Shape == 26)//Dynamic wonderDrug
             {
                 string strTime = Functions.PrintTimeSpanFromSeconds((HoverItem.CurrentDura * 3600), false);
                 switch ((int)realItem.Effect)
                 {
                     case 0://exp low/med/high
-                        HoverItem.Info.ToolTip = string.Format("Increase experience gained by {0}% for {1}.", HoverItem.Luck + realItem.Luck, strTime);
+                        HoverItem.Info.ToolTip = string.Format("增加经验 {0}% 时限 {1}.", HoverItem.Luck + realItem.Luck, strTime);
                         break;
                     case 1://drop low/med/high
-                        HoverItem.Info.ToolTip = string.Format("Increase droprate by {0}% for {1}.", HoverItem.Luck + realItem.Luck, strTime);
+                        HoverItem.Info.ToolTip = string.Format("增加爆率 {0}% 时限 {1}.", HoverItem.Luck + realItem.Luck, strTime);
                         break;
                     case 2://hp low/med/high
-                        HoverItem.Info.ToolTip = string.Format("Increase MaxHP +{0} for {1}.", HoverItem.HP + realItem.HP, strTime);
+                        HoverItem.Info.ToolTip = string.Format("增加 HP +{0} 时限 {1}.", HoverItem.HP + realItem.HP, strTime);
                         break;
                     case 3://mp low/med/high
-                        HoverItem.Info.ToolTip = string.Format("Increase MaxMP +{0} for {1}.", HoverItem.MP + realItem.MP, strTime);
+                        HoverItem.Info.ToolTip = string.Format("增加 MP +{0} 时限 {1}.", HoverItem.MP + realItem.MP, strTime);
                         break;
                     case 4://ac low/med/high
-                        HoverItem.Info.ToolTip = string.Format("Increase AC {0}-{0} for {1}.", HoverItem.AC + realItem.MaxAC, strTime);
+                        HoverItem.Info.ToolTip = string.Format("增加防御 {0}-{0} 时限 {1}.", HoverItem.AC + realItem.MaxAC, strTime);
                         break;
                     case 5://amc low/med/high
-                        HoverItem.Info.ToolTip = string.Format("Increase AMC {0}-{0} for {1}.", HoverItem.MAC + realItem.MaxAC, strTime);
+                        HoverItem.Info.ToolTip = string.Format("增加魔御 {0}-{0} 时限 {1}.", HoverItem.MAC + realItem.MaxAC, strTime);
                         break;
                     case 6://speed low/med/high
-                        HoverItem.Info.ToolTip = string.Format("Increase AttackSpeed by {0} for {1}.", HoverItem.AttackSpeed + realItem.AttackSpeed, strTime);
+                        HoverItem.Info.ToolTip = string.Format("增加攻速 {0} 时限 {1}.", HoverItem.AttackSpeed + realItem.AttackSpeed, strTime);
                         break;
                 }
             }
 
             if (realItem.Type == ItemType.Scroll && realItem.Shape == 7)//Credit Scroll
             {
-                HoverItem.Info.ToolTip = string.Format("Adds {0} Credits to your Account.", HoverItem.Info.Price);
+                HoverItem.Info.ToolTip = string.Format("加 {0} 声望到你账号.", HoverItem.Info.Price);
             }
 
             if (!string.IsNullOrEmpty(HoverItem.Info.ToolTip))
@@ -7839,7 +7877,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = "Item Description:"
+                    Text = "物品描述:"
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, IDLabel.DisplayRectangle.Right + 4),
@@ -7888,6 +7926,8 @@ namespace Client.MirScenes
             return null;
         }
 
+        //这个真的是物品的说明，就是鼠标移到物品上的说明
+        //这个只检测等级和职业么，而且等级和职业不应该在这里检测吧？应该放到物品类里实现吧。
         public void CreateItemLabel(UserItem item, bool Inspect = false)
         {
             if (item == null)
@@ -7896,12 +7936,15 @@ namespace Client.MirScenes
                 HoverItem = null;
                 return;
             }
-
+            //如果存在，就不重复创建了
             if (item == HoverItem && ItemLabel != null && !ItemLabel.IsDisposed) return;
-            ushort level = Inspect ? InspectDialog.Level : MapObject.User.Level;
-            MirClass job = Inspect ? InspectDialog.Class : MapObject.User.Class;
+
+            //是否检测物品，如果检测，则加上用户等级，职业，重新创建物品？
             HoverItem = item;
-            ItemInfo realItem = Functions.GetRealItem(item.Info, level, job, ItemInfoList);
+            //这几行有个毛用啊，下面每个创建里都有这几行
+            //ushort level = Inspect ? InspectDialog.Level : MapObject.User.Level;
+            //MirClass job = Inspect ? InspectDialog.Class : MapObject.User.Class;
+            //ItemInfo realItem = Functions.GetRealItem(item.Info, level, job, ItemInfoList);
 
             ItemLabel = new MirControl
             {
@@ -8067,7 +8110,8 @@ namespace Client.MirScenes
 
             return null;
         }
-
+        
+        //获取用户名称,内存中有的话，就显示内存中的，内存中没有，就查询
         public string GetUserName(uint id)
         {
             for (int i = 0; i < UserIdList.Count; i++)
@@ -8077,7 +8121,7 @@ namespace Client.MirScenes
                     return who.UserName;
             }
             Network.Enqueue(new C.RequestUserName { UserID = id });
-            UserIdList.Add(new UserId() { Id = id, UserName = "Unknown" });
+            UserIdList.Add(new UserId() { Id = id, UserName = "未知" });
             return "";
         }
 
@@ -8310,7 +8354,7 @@ namespace Client.MirScenes
             get { return MapObject.User; }
             set { MapObject.User = value; }
         }
-
+        //这个是地图上的物品列表（包括地图上的玩家，掉落物品，怪物等等信息,感觉这个分开比较好）
         public static List<MapObject> Objects = new List<MapObject>();
 
         //每格大小
@@ -8331,6 +8375,7 @@ namespace Client.MirScenes
         }
 
         public static MouseButtons MapButtons;
+        //鼠标的位置，这个不是有个静态变量存放的么？这个是鼠标在地图上的位置
         public static Point MouseLocation;
         public static long InputDelay;
         public static long NextAction;
@@ -8380,7 +8425,7 @@ namespace Client.MirScenes
                 if (_autoRun == value) return;
                 _autoRun = value;
                 if (GameScene.Scene != null)
-                    GameScene.Scene.ChatDialog.ReceiveChat(value ? "[AutoRun: On]" : "[AutoRun: Off]", ChatType.Hint);
+                    GameScene.Scene.ChatDialog.ReceiveChat(value ? "[自动跑步: 开启]" : "[自动跑步: 关闭]", ChatType.Hint);
             }
 
         }
@@ -8408,9 +8453,10 @@ namespace Client.MirScenes
             MouseMove += (o, e) => MouseLocation = e.Location;
             Click += OnMouseClick;
         }
-
+        //加载地图
         public void LoadMap()
         {
+            //清空一些静态数据
             GameScene.Scene.NPCDialog.Hide();
             Objects.Clear();
             Effects.Clear();
@@ -8424,11 +8470,12 @@ namespace Client.MirScenes
             MapObject.MouseObject = null;
             MapObject.TargetObject = null;
             MapObject.MagicObject = null;
+            //读取地图
             MapReader Map = new MapReader(FileName);
             M2CellInfo = Map.MapCells;
             Width = Map.Width;
             Height = Map.Height;
-
+            //播放地图的背景音乐
             try
             {
                 if (SetMusic != Music)
@@ -8447,11 +8494,14 @@ namespace Client.MirScenes
             SoundList.Music = Music;
         }
 
-
+        //处理，这个应该是在消息死循环线程中调用处理的
         public void Process()
         {
+            //处理门
             Processdoors();
+            //用户处理，这个放这里么？
             User.Process();
+            //地图上的对象处理，不如把用户处理一起合并这里不就行了？要先处理用户么？
             for (int i = Objects.Count - 1; i >= 0; i--)
             {
                 MapObject ob = Objects[i];
@@ -8459,18 +8509,20 @@ namespace Client.MirScenes
                 //  if (ob.ActionFeed.Count > 0 || ob.Effects.Count > 0 || GameScene.CanMove || CMain.Time >= ob.NextMotion)
                 ob.Process();
             }
-
+            //技能处理
             for (int i = Effects.Count - 1; i >= 0; i--)
                 Effects[i].Process();
-
+            //这2个不知道是什么
             if (MapObject.TargetObject != null && MapObject.TargetObject is MonsterObject && MapObject.TargetObject.AI == 64)
                 MapObject.TargetObject = null;
+
             if (MapObject.MagicObject != null && MapObject.MagicObject is MonsterObject && MapObject.MagicObject.AI == 64)
                 MapObject.MagicObject = null;
 
+            //检测输入？
             CheckInput();
 
-
+            //这个好几层的循环哦，这个是寻找鼠标的目标么？，应该是智能施法的目标？
             MapObject bestmouseobject = null;
             for (int y = MapLocation.Y + 2; y >= MapLocation.Y - 2; y--)
             {
@@ -8510,7 +8562,7 @@ namespace Client.MirScenes
                 }
             }
 
-
+            //鼠标目标立马置空？不对，上面有return，走不到这里，走到这里就是没找到目标
             if (MapObject.MouseObject != null)
             {
                 MapObject.MouseObject = null;
@@ -8534,6 +8586,7 @@ namespace Client.MirScenes
             //Do nothing.
         }
 
+        //创建纹理
         protected override void CreateTexture()
         {
             if (User == null) return;
@@ -8607,6 +8660,7 @@ namespace Client.MirScenes
             surface.Dispose();
             TextureValid = true;
         }
+        //画控件？
         protected internal override void DrawControl()
         {
             if (!DrawControlTexture)
@@ -8626,7 +8680,7 @@ namespace Client.MirScenes
 
             CleanTime = CMain.Time + Settings.CleanDelay;
         }
-
+        //画地面
         private void DrawFloor()
         {
             if (_floorTexture == null || _floorTexture.Disposed)
@@ -8952,6 +9006,7 @@ namespace Client.MirScenes
                 Effects[i].Draw();
         }
 
+        //光照系统，这个已经没用了
         private void DrawLights(LightSetting setting)
         {
             if (DXManager.Lights == null || DXManager.Lights.Count == 0) return;
@@ -9346,7 +9401,7 @@ namespace Client.MirScenes
                             if (CMain.Time >= OutputDelay)
                             {
                                 OutputDelay = CMain.Time + 1000;
-                                GameScene.Scene.OutputMessage("Target is too far.");
+                                GameScene.Scene.OutputMessage("目标太远.");
                             }
                         }
                         //  return;
@@ -9371,11 +9426,12 @@ namespace Client.MirScenes
                 }
             }
 
-            
+            //这里进行各种鼠标动作处理？
             MirDirection direction;
             if (MouseControl == this)
             {
                 direction = MouseDirection();
+                //自动行走
                 if (AutoRun)
                 {
                     if (GameScene.CanRun && CanRun(direction) && CMain.Time > GameScene.NextRunTime && User.HP >= 10 && (!User.Sneaking || (User.Sneaking && User.Sprint))) //slow remove
@@ -9408,7 +9464,7 @@ namespace Client.MirScenes
 
                 switch (MapButtons)
                 {
-                    case MouseButtons.Left:
+                    case MouseButtons.Left://左键点击，这个是攻击？
                         if (MapObject.MouseObject is NPCObject || (MapObject.MouseObject is PlayerObject && MapObject.MouseObject != User)) break;
                         if (MapObject.MouseObject is MonsterObject && MapObject.MouseObject.AI == 70) break;
 
@@ -9433,7 +9489,7 @@ namespace Client.MirScenes
                                             if (CMain.Time >= OutputDelay)
                                             {
                                                 OutputDelay = CMain.Time + 1000;
-                                                GameScene.Scene.OutputMessage("Target is too far.");
+                                                GameScene.Scene.OutputMessage("目标太远.");
                                             }
                                             return;
                                         }
@@ -9469,7 +9525,7 @@ namespace Client.MirScenes
                                 if (CMain.Time >= OutputDelay)
                                 {
                                     OutputDelay = CMain.Time + 1000;
-                                    GameScene.Scene.OutputMessage("Target is too far.");
+                                    GameScene.Scene.OutputMessage("目标太远.");
                                 }
                             }
                             return;
@@ -9519,9 +9575,10 @@ namespace Client.MirScenes
                         }
 
                         break;
-                    case MouseButtons.Right:
+                    case MouseButtons.Right://右键跑步
+                        //这个是查看玩家装备？
                         if (MapObject.MouseObject is PlayerObject && MapObject.MouseObject != User && CMain.Ctrl) break;
-
+                        //2格以内，直接转向？
                         if (Functions.InRange(MapLocation, User.CurrentLocation, 2))
                         {
                             if (direction != User.Direction)
@@ -9532,6 +9589,8 @@ namespace Client.MirScenes
                         }
 
                         GameScene.CanRun = User.FastRun ? true : GameScene.CanRun;
+                        //把免助跑去掉？服务器也要相应的去掉才可以的
+                        
 
                         if (GameScene.CanRun && CanRun(direction) && CMain.Time > GameScene.NextRunTime && User.HP >= 10 && (!User.Sneaking || (User.Sneaking && User.Sprint))) //slow removed
                         {
@@ -9767,7 +9826,7 @@ namespace Client.MirScenes
                 if (CMain.Time >= OutputDelay)
                 {
                     OutputDelay = CMain.Time + 1000;
-                    GameScene.Scene.OutputMessage("Target is too far.");
+                    GameScene.Scene.OutputMessage("目标太远.");
                 }
                 User.ClearMagic();
                 return;
@@ -9781,10 +9840,12 @@ namespace Client.MirScenes
             User.QueuedAction.Params.Add(location);
             User.QueuedAction.Params.Add(magic.Level);
         }
-
+        
+        //计算获取鼠标的方向
         public static MirDirection MouseDirection(float ratio = 45F) //22.5 = 16
         {
             Point p = new Point(MouseLocation.X / CellWidth, MouseLocation.Y / CellHeight);
+
             if (Functions.InRange(new Point(OffSetX, OffSetY), p, 2))
                 return Functions.DirectionFromPoint(new Point(OffSetX, OffSetY), p);
 
@@ -9809,6 +9870,7 @@ namespace Client.MirScenes
             return (MirDirection)(angle / ratio);
         }
 
+        //16方向？主要用来控制魔法的，看魔法攻击是否打得中目标，在16个方向上的都中
         public static int Direction16(Point source, Point destination)
         {
             PointF c = new PointF(source.X, source.Y);
@@ -9832,18 +9894,21 @@ namespace Client.MirScenes
             return (int)(angle / 22.5F);
         }
 
+        //计算2个点的距离
         public static double Distance(PointF p1, PointF p2)
         {
             double x = p2.X - p1.X;
             double y = p2.Y - p1.Y;
             return Math.Sqrt(x * x + y * y);
         }
-
+        //判断是否可以进入那个格？那个格是否是空的
         private bool EmptyCell(Point p)
         {
+            //这个是什么？
             if ((M2CellInfo[p.X, p.Y].BackImage & 0x20000000) != 0 || (M2CellInfo[p.X, p.Y].FrontImage & 0x8000) != 0) // + (M2CellInfo[P.X, P.Y].FrontImage & 0x7FFF) != 0)
                 return false;
 
+            //是否有物体阻挡
             for (int i = 0; i < Objects.Count; i++)
             {
                 MapObject ob = Objects[i];
@@ -9854,12 +9919,13 @@ namespace Client.MirScenes
 
             return true;
         }
-
+        //是否可以走这个方向
         private bool CanWalk(MirDirection dir)
         {
             return EmptyCell(Functions.PointMove(User.CurrentLocation, dir, 1)) && !User.InTrapRock;
         }
 
+        //检测门是否打开
         private bool CheckDoorOpen(Point p)
         {
             if (M2CellInfo[p.X, p.Y].DoorIndex == 0) return true;
@@ -9877,14 +9943,16 @@ namespace Client.MirScenes
             return true;
         }
 
-
+        //是否可以跑
         private bool CanRun(MirDirection dir)
         {
             if (User.InTrapRock) return false;
+            //超负重
             if (User.CurrentBagWeight > User.MaxBagWeight) return false;
-
+            //能进入下个点，并且能进入下2个点
             if (CanWalk(dir) && EmptyCell(Functions.PointMove(User.CurrentLocation, dir, 2)))
             {
+                //坐骑，冲刺，不潜行则判断是否可以进入前3个点
                 if (User.RidingMount || User.Sprint && !User.Sneaking)
                 {
                     return EmptyCell(Functions.PointMove(User.CurrentLocation, dir, 3));
@@ -9895,7 +9963,7 @@ namespace Client.MirScenes
 
             return false;
         }
-
+        //是否可以骑马攻击
         private bool CanRideAttack()
         {
             if (GameScene.User.RidingMount)
@@ -9906,14 +9974,18 @@ namespace Client.MirScenes
 
             return true;
         }
-
+        //是否可以钓鱼？
         public bool CanFish(MirDirection dir)
         {
+            //正在钓鱼，或者钓鱼时间小于1秒，则不允许钓鱼
             if (!GameScene.User.HasFishingRod || GameScene.User.FishingTime + 1000 > CMain.Time) return false;
+            //当前姿势不是站立状态不允许钓鱼
             if (GameScene.User.CurrentAction != MirAction.Standing) return false;
+            //方向不对不能钓鱼
             if (GameScene.User.Direction != dir) return false;
+            //这个不知道什么意思，这个是外观衣服么？
             if (GameScene.User.TransformType >= 6 && GameScene.User.TransformType <= 9) return false;
-
+            //前面第3格不是钓鱼的格子不能钓鱼
             Point point = Functions.PointMove(User.CurrentLocation, dir, 3);
 
             if (!M2CellInfo[point.X, point.Y].FishingCell) return false;
@@ -9921,8 +9993,10 @@ namespace Client.MirScenes
             return true;
         }
 
+        //可以飞跃么？
         public bool CanFly(Point target)
         {
+            //当前位置到目标位置的所有点都可以访问就可以飞
             Point location = User.CurrentLocation;
             while (location != target)
             {
@@ -9938,23 +10012,27 @@ namespace Client.MirScenes
             return true;
         }
 
-
+        //某个点是否可以访问，就是不是全黑的咯？
         public bool ValidPoint(Point p)
         {
             //GameScene.Scene.ChatDialog.ReceiveChat(string.Format("cell: {0}", (M2CellInfo[p.X, p.Y].BackImage & 0x20000000)), ChatType.Hint);
+            //这个到底是什么意思
             return (M2CellInfo[p.X, p.Y].BackImage & 0x20000000) == 0;
         }
+
+        //是否有目标，有阻挡就有目标？
         public bool HasTarget(Point p)
         {
             for (int i = 0; i < Objects.Count; i++)
             {
                 MapObject ob = Objects[i];
-
                 if (ob.CurrentLocation == p && ob.Blocking)
                     return true;
             }
             return false;
         }
+        //是否可以半月？上一个点，和下3个点，是否有目标，有目标就可以半月
+        //这个判断有问题吧，有目标不代表可以攻击啊？有人呢？智能半月的时候要测试下这个了。
         public bool CanHalfMoon(Point p, MirDirection d)
         {
             d = Functions.PreviousDir(d);
@@ -9965,6 +10043,7 @@ namespace Client.MirScenes
             }
             return false;
         }
+        //能否十字半月，8个方向只要有一个方向有，就可以十字半月
         public bool CanCrossHalfMoon(Point p)
         {
             MirDirection dir = MirDirection.Up;
@@ -10116,20 +10195,20 @@ namespace Client.MirScenes
                 case BuffType.TemporalFlux:
                     text = string.Format("Temporal Flux\nIncreases cost of next Teleport by: {0} MP.\n", (int)(MapObject.User.MaxMP * 0.3F));
                     break;
-                case BuffType.Hiding:
-                    text = "Hiding\nInvisible to many monsters.\n";
+                case BuffType.Hiding://隐身
+                    text = "隐身\n很多怪物看不到你.\n";
                     break;
-                case BuffType.Haste:
-                    text = string.Format("Haste\nIncreases Attack Speed by: {0}.\n", Values[0]);
+                case BuffType.Haste://加速
+                    text = string.Format("Haste\n增加攻击速度: {0}.\n", Values[0]);
                     break;
                 case BuffType.SwiftFeet:
-                    text = string.Format("Swift Feet\nIncreases Move Speed by: {0}.\n", Values[0]);
+                    text = string.Format("Swift Feet\n增加移动速度: {0}.\n", Values[0]);
                     break;
                 case BuffType.Fury:
-                    text = string.Format("Fury\nIncreases Attack Speed by: {0}.\n", Values[0]);
+                    text = string.Format("愤怒\n增加攻击速度: {0}.\n", Values[0]);
                     break;
                 case BuffType.LightBody:
-                    text = string.Format("Light Body\nIncreases Agility by: {0}.\n", Values[0]);
+                    text = string.Format("Light Body\n增加敏捷: {0}.\n", Values[0]);
                     break;
                 case BuffType.SoulShield:
                     text = string.Format("Soul Shield\nIncreases MAC by: 0-{0}.\n", Values[0]);

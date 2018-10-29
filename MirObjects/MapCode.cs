@@ -3,35 +3,57 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Drawing;
 
 namespace Client.MirObjects
 {
+    /// <summary>
+    /// 这个地图中的MapTile定义
+    /// 一个地图文件.map由2部分组成，
+    /// 1个是头文件，主要记录地图的大小，地图宽度，地图高度，标题，更新日期，保留字符等几个地图的主要信息
+    /// 2个是地图块即逻辑坐标的点，点(人物/NPC等放置需要占用一个逻辑坐标点)
+    /// 热血传奇2中一个逻辑坐标点(地图块)需要占用 48 * 32 屏幕坐标大小
+    /// 每个地图块为3层结构，包括‘背景-地板’和‘中间层-这个主要是阴影’和前面层，这个就是建筑，物体等
+    /// 例如树叶投影下的地图块就是2层，包括地表及物体(如有突起石头的地面或有水流的地面)和树叶
+    /// </summary>
     public class CellInfo
     {
+        /** 背景图索引-后 如果最高位为1则表示不能通过(或站立) */
         public short BackIndex;
         public int BackImage;
+        /** 补充背景图索引-中，这个一般是阴影？ */
         public short MiddleIndex;
         public int MiddleImage;
+        /** 对象图索引-前，这个一般是建筑物？ 如果最高位为1则表示不能飞过，有些技能需要判断这个穿行路线，如火球，如果经过了这个则是打不中的哦 */
         public short FrontIndex;
         public int FrontImage;
 
+        /** 门索引  门索引，最高位为1表示有门，为0表示没有门 */
         public byte DoorIndex;
+        /** 门偏移  最高位为1表示门打开了，为0表示门为关闭状态,这个门开关应该是服务器端控制的，不应该是客户端控制 */
         public byte DoorOffset;
 
+        /** 前层动画帧数 */
         public byte FrontAnimationFrame;
+        /** 前层动画跳帧数 */
         public byte FrontAnimationTick;
 
+        /** 这个是中间层动画跳帧数 */
         public byte MiddleAnimationFrame;
         public byte MiddleAnimationTick;
-
+        /****这些不属于地图本来的属性，应该是额外属性，计算出来的****/
         public short TileAnimationImage;
         public short TileAnimationOffset;
         public byte  TileAnimationFrames;
-
+        /** 亮度 */
         public byte Light;
+
         public byte Unknown;
+
+        /***这个是在地图的每个格里站着的人，怪，物等，可以重叠**/
         public List<MapObject> CellObjects;
 
+        /***是否可以钓鱼**/
         public bool FishingCell;
 
         public void AddObject(MapObject ob)
@@ -48,6 +70,7 @@ namespace Client.MirObjects
             if (CellObjects.Count == 0) CellObjects = null;
             else Sort();
         }
+        //通过对象ID查询这个格里有没这个对象
         public MapObject FindObject(uint ObjectID)
         {
             return CellObjects.Find(
@@ -56,6 +79,27 @@ namespace Client.MirObjects
                 return mo.ObjectID == ObjectID;
             });
         }
+
+        //判断是否可以进入那个格？那个格是否是空的
+        public bool EmptyCell()
+        {
+            //这个是什么？
+            if ((BackImage & 0x20000000) != 0 || (FrontImage & 0x8000) != 0) // + (M2CellInfo[P.X, P.Y].FrontImage & 0x7FFF) != 0)
+                return false;
+
+            //是否有物体阻挡
+            for (int i = 0; i < CellObjects.Count; i++)
+            {
+                MapObject ob = CellObjects[i];
+                if (ob.Blocking)
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 对这个格子进行重画
+        /// </summary>
         public void DrawObjects()
         {
             if (CellObjects == null) return;
@@ -113,7 +157,7 @@ namespace Client.MirObjects
                 CellObjects[i].Draw();
             }
         }
-
+        //对这个格中的物件进行重排序，是为了画图的先后顺序
         public void Sort()
         {
             CellObjects.Sort(delegate(MapObject ob1, MapObject ob2)

@@ -11,6 +11,7 @@ using C = ClientPackets;
 
 namespace Client.MirControls
 {
+    //物品格子
     public sealed class MirItemCell : MirImageControl
     {
 
@@ -598,6 +599,8 @@ namespace Client.MirControls
                     break;
             }
         }
+
+        //删除物品
         public void RemoveItem()
         {
             int count = 0;
@@ -668,7 +671,7 @@ namespace Client.MirControls
             }
 
         }
-
+        //移动物品
         private void MoveItem()
         {
             if (GridType == MirGridType.BuyBack || GridType == MirGridType.DropPanel || GridType == MirGridType.Inspect || GridType == MirGridType.TrustMerchant || GridType == MirGridType.Craft) return;
@@ -1531,6 +1534,8 @@ namespace Client.MirControls
                 GameScene.SelectedCell = this;
             }
         }
+
+        //播放物品的声音
         private void PlayItemSound()
         {
             if (Item == null) return;
@@ -1567,6 +1572,7 @@ namespace Client.MirControls
             }
         }
 
+        //空余的空间
         private int FreeSpace()
         {
             int count = 0;
@@ -1577,7 +1583,7 @@ namespace Client.MirControls
             return count;
         }
 
-
+        //是否可以丢弃？
         private bool CanRemoveItem(UserItem i)
         {
             if(MapObject.User.RidingMount && i.Info.Type != ItemType.Torch)
@@ -1588,6 +1594,7 @@ namespace Client.MirControls
             return FreeSpace() > 0;
         }
 
+        //是否可以装备
         private bool CorrectSlot(UserItem i)
         {
             ItemType type = i.Info.Type;
@@ -1626,6 +1633,8 @@ namespace Client.MirControls
             }
 
         }
+
+        //是否可以使用物品判断
         private bool CanUseItem()
         {
             if (Item == null) return false;
@@ -1804,12 +1813,13 @@ namespace Client.MirControls
             return true;
         }
 
+        //是否可以穿戴物品
         private bool CanWearItem(UserItem i)
         {
             if (i == null) return false;
 
             //If Can remove;
-
+            //性别判断
             switch (MapObject.User.Gender)
             {
                 case MirGender.Male:
@@ -1827,7 +1837,7 @@ namespace Client.MirControls
                     }
                     break;
             }
-
+            //职业判断
             switch (MapObject.User.Class)
             {
                 case MirClass.Warrior:
@@ -1866,7 +1876,7 @@ namespace Client.MirControls
                     }
                     break;
             }
-
+            //穿戴要求判断
             switch (i.Info.RequiredType)
             {
                 case RequiredType.Level:
@@ -1955,6 +1965,7 @@ namespace Client.MirControls
                     break;
             }
 
+            //腕力，负重判断
             if (i.Info.Type == ItemType.Weapon || i.Info.Type == ItemType.Torch)
             {
                 if (i.Weight - (Item != null ? Item.Weight : 0) + MapObject.User.CurrentHandWeight > MapObject.User.MaxHandWeight)

@@ -15,7 +15,7 @@ namespace Client.MirControls
     /// </summary>
     public class MirControl : IDisposable
     {
-        //激活视图（点击视图），鼠标子视图（鼠标应该视图）,这个是静态，全局的？什么鬼哦，也就是说任何时候只有一个是激活的，一个是鼠标的场景咯？
+        //激活视图（点击视图），鼠标子视图（鼠标对应的视图，其实是个格子？）,这个是静态，全局的？什么鬼哦，也就是说任何时候只有一个是激活的，一个是鼠标的场景咯？
         public static MirControl ActiveControl, MouseControl;
         
         //实际显示的位置=父窗口的位置+当前位置,等于在父窗口的偏移
@@ -207,6 +207,8 @@ namespace Client.MirControls
             Controls.Add(control);
             OnControlAdded();
         }
+        
+        //插入视图
         public void InsertControl(int index, MirControl control)
         {
             if (control.Parent != this)
@@ -403,7 +405,7 @@ namespace Client.MirControls
                 MovableChanged.Invoke(this, EventArgs.Empty);
         }
         #endregion
-        //不能控制？
+        //不能控制？如果不能控制，则不能相应相关的鼠标事件
         #region Not Control
         private bool _notControl;
         public bool NotControl

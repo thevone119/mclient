@@ -10,6 +10,7 @@ using C = ClientPackets;
 
 namespace Client.MirScenes.Dialogs
 {
+    //物品出租
     public sealed class ItemRentDialog : MirImageControl
     {
         private readonly MirLabel _nameLabel, _rentalPriceLabel;

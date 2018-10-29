@@ -13,6 +13,7 @@ using C = ClientPackets;
 
 namespace Client.MirScenes.Dialogs
 {
+    //键盘设置么？好像没什么用
     public sealed class KeyboardLayoutDialog : MirImageControl
     {
         public MirImageControl TitleLabel;

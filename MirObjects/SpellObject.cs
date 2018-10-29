@@ -9,6 +9,11 @@ using S = ServerPackets;
 
 namespace Client.MirObjects
 {
+    /// <summary>
+    /// 魔法效果？，在固定位置上的魔法效果？
+    /// 比如防，魔，疾光电影，困魔，冰咆哮，电，火墙，等,但是火球这种移动的就不在这里了。
+    /// 这种服务器是否返回个过期时间比较好？让客户端自动过期算了，不用服务器端发删除指令给客户端？
+    /// </summary>
     class SpellObject : MapObject
     {
         public override ObjectType Race
@@ -41,14 +46,14 @@ namespace Client.MirObjects
 
             switch (Spell)
             {
-                case Spell.TrapHexagon:
+                case Spell.TrapHexagon://困魔
                     BodyLibrary = Libraries.Magic;
                     DrawFrame = 1390;
                     FrameInterval = 100;
                     FrameCount = 10;
                     Blend = true;
                     break;
-                case Spell.FireWall:
+                case Spell.FireWall://火墙，这种长期的，没有个过期时间么？
                     BodyLibrary = Libraries.Magic;
                     DrawFrame = 1630;
                     FrameInterval = 120;
@@ -56,7 +61,7 @@ namespace Client.MirObjects
                     Light = 3;
                     Blend = true;
                     break;
-                case Spell.PoisonCloud:
+                case Spell.PoisonCloud://群毒，这个不对哦，应该是地面有一团毒云
                     BodyLibrary = Libraries.Magic2;
                     DrawFrame = 1650;
                     FrameInterval = 120;
@@ -70,7 +75,7 @@ namespace Client.MirObjects
                     FrameCount = 0;
                     Blend = false;
                     break;
-                case Spell.Blizzard:
+                case Spell.Blizzard://没见过，什么风暴
                     CurrentLocation.Y = Math.Max(0, CurrentLocation.Y - 20);
                     BodyLibrary = Libraries.Magic2;
                     DrawFrame = 1550;
@@ -80,7 +85,7 @@ namespace Client.MirObjects
                     Blend = true;
                     Repeat = false;
                     break;
-                case Spell.MeteorStrike:
+                case Spell.MeteorStrike://这个陨石
                     MapControl.Effects.Add(new Effect(Libraries.Magic2, 1600, 10, 800, CurrentLocation) { Repeat = true, RepeatUntil = CMain.Time + 3000 });
                     CurrentLocation.Y = Math.Max(0, CurrentLocation.Y - 20);
                     BodyLibrary = Libraries.Magic2;
@@ -102,7 +107,7 @@ namespace Client.MirObjects
                         FrameInterval = 10000;
                     }
                     break;
-                case Spell.Reincarnation:
+                case Spell.Reincarnation://升级效果，转身效果？,应该是重生地？
                     BodyLibrary = Libraries.Magic2;
                     DrawFrame = 1680;
                     FrameInterval = 100;
@@ -111,7 +116,7 @@ namespace Client.MirObjects
                     Blend = true;
                     Repeat = true;
                     break;
-                case Spell.ExplosiveTrap:
+                case Spell.ExplosiveTrap://这个是陷阱
                     BodyLibrary = Libraries.Magic3;
                     if (info.Param)
                     {
@@ -165,6 +170,7 @@ namespace Client.MirObjects
 
 
             NextMotion = CMain.Time + FrameInterval;
+            //这个是干嘛的？消除后面2位的小数？
             NextMotion -= NextMotion % 100;
         }
         public override void Process()

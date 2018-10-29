@@ -9,6 +9,7 @@ using C = ClientPackets;
 
 namespace Client.MirScenes.Dialogs
 {
+    //物品出租
     public sealed class ItemRentingDialog : MirImageControl
     {
         public static UserItem RentalItem;

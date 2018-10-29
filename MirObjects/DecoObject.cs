@@ -9,6 +9,12 @@ using S = ServerPackets;
 
 namespace Client.MirObjects
 {
+    /// <summary>
+    /// 这个是小动物，小房子等的图片而已,感觉好像没什么鸟用
+    /// 应该是NPC对话框中出现的图片吧？
+    /// 目前还不知道有什么用
+    /// 但是这个不属于对话框的？是显示在地图上的么？什么时候有这个东西哦？
+    /// </summary>
     class DecoObject : MapObject
     {
         public override ObjectType Race

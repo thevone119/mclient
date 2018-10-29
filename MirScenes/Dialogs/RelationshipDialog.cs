@@ -13,6 +13,7 @@ using C = ClientPackets;
 
 namespace Client.MirScenes.Dialogs
 {
+    //结婚，结婚关系
     public sealed class RelationshipDialog : MirImageControl
     {
         public MirImageControl TitleLabel;

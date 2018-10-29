@@ -13,6 +13,7 @@ using C = ClientPackets;
 
 namespace Client.MirScenes.Dialogs
 {
+    //师徒，没卵用
     public sealed class MentorDialog : MirImageControl
     {
         public MirImageControl TitleLabel;

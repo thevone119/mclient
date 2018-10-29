@@ -142,7 +142,7 @@ namespace Client
         Cameramode,
         Screenshot,
         DropView,
-        TargetDead,
+        TargetDead,//这个是挖肉么？
         Ranking,
         AddGroupMember
     }
@@ -155,6 +155,12 @@ namespace Client
         public byte RequireAlt = 0;
         public byte RequireTilde = 0;
         public Keys Key = 0;
+
+
+        public override  string ToString()
+        {
+            return "function:" + function + ",RequireCtrl:" + RequireCtrl + ",RequireShift:" + RequireShift + ",RequireAlt:" + RequireAlt + ",RequireTilde:" + RequireTilde + ",Key:" + Key;
+        }
     }
 
     //按键设置，这个后面要改下，改成保存到角色下？
@@ -445,38 +451,28 @@ namespace Client
                 return null;
             }
             //自定义键，0：没有按住。1：必须按住，2：按不按都可以
+            MirLog.debug("key" + key);
             KeyBind kb = keydict[key];
             if (kb == null)
             {
                 return null;
             }
-            if (Shift)
+            MirLog.debug("kb" + kb.ToString());
+            if (kb.RequireShift != 2 && kb.RequireShift != (Shift ? 1 : 0))
             {
-                if (kb.RequireShift != 1)
-                {
-                    return null;
-                }
+                return null;
             }
-            if (Alt)
+            if (kb.RequireAlt != 2 && kb.RequireAlt != (Alt ? 1 : 0))
             {
-                if (kb.RequireAlt != 1)
-                {
-                    return null;
-                }
+                return null;
             }
-            if (Ctrl)
+            if (kb.RequireCtrl != 2 && kb.RequireCtrl != (Ctrl ? 1 : 0))
             {
-                if (kb.RequireCtrl != 1)
-                {
-                    return null;
-                }
+                return null;
             }
-            if (Tilde)
+            if (kb.RequireTilde != 2 && kb.RequireTilde != (Tilde ? 1 : 0))
             {
-                if (kb.RequireTilde != 1)
-                {
-                    return null;
-                }
+                return null;
             }
             return kb;
         }

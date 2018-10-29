@@ -39,10 +39,11 @@ namespace Client.MirGraphics
         public static float BlendingRate;
         public static BlendMode BlendingMode;
 
-
+        //这是雷达？小地图上的点？2*2大小的点
         public static Texture RadarTexture;
         //这个是灯光
         public static List<Texture> Lights = new List<Texture>();
+        //5*5的点
         public static Texture PoisonDotBackground;
         //定义4个着色器，灰度，正常，魔法，阴影
         public static PixelShader GrayScalePixelShader;
@@ -175,12 +176,15 @@ namespace Client.MirGraphics
         private unsafe static void CreateLights()
         {
             //用下面几行代码把这个灯光去掉
-            Lights.Clear();
-            if (Lights.Count == 0)
+            if (ServerConfig.lightType == LightType.none)
             {
-                return;
+                Lights.Clear();
+                if (Lights.Count == 0)
+                {
+                    return;
+                }
             }
-
+            
             for (int i = Lights.Count - 1; i >= 0; i--)
                 Lights[i].Dispose();
 

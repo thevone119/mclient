@@ -8,6 +8,9 @@ using S = ServerPackets;
 
 namespace Client.MirObjects
 {
+    /// <summary>
+    /// 当前玩家
+    /// </summary>
     public class UserObject : PlayerObject
     {
         public uint Id;
@@ -150,7 +153,7 @@ namespace Client.MirObjects
         {
             base.SetEffects();
         }
-
+        //更新用户状态
         public void RefreshStats()
         {
             RefreshLevelStats();
@@ -258,6 +261,7 @@ namespace Client.MirObjects
                     CurrentBagWeight = (ushort)Math.Min(ushort.MaxValue, CurrentBagWeight + item.Weight);
             }
         }
+        //刷新装备物品后的状态
         private void RefreshEquipmentStats()
         {
             Weapon = -1;
@@ -276,7 +280,7 @@ namespace Client.MirObjects
             HasProbeNecklace = false;
             HasSkillNecklace = false;
             NoDuraLoss = false;
-            FastRun = false;
+            FastRun = false;//默认不能免助跑
             short Macrate = 0, Acrate = 0, HPrate = 0, MPrate = 0;
 
             ItemSets.Clear();

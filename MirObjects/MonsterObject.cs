@@ -11,16 +11,26 @@ using Client.MirControls;
 
 namespace Client.MirObjects
 {
+    /// <summary>
+    /// 怪物对象
+    /// 这个包括各种怪物对应的图片，动作等都在这里写死了。
+    /// 具体怪物对应的图片，动作这些，应该在服务器端定义的？
+    /// 
+    /// 
+    /// </summary>
     class MonsterObject : MapObject
     {
         public override ObjectType Race
         {
             get { return ObjectType.Monster; }
         }
+        //这里的AI64 AI81分别是什么？
+        //81朝向左边就不阻挡？
         public override bool Blocking
         {
             get { return AI == 64 || (AI == 81 && Direction == (MirDirection)6) ? false : !Dead; }
         }
+
         public Point ManualLocationOffset
         {
             get
@@ -72,6 +82,7 @@ namespace Client.MirObjects
             : base(objectID)
         {
         }
+        //这个是否服务器端返回的怪物信息
         public void Load(S.ObjectMonster info, bool update = false)
         {
             Name = info.Name;

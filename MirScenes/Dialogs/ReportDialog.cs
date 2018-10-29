@@ -13,6 +13,7 @@ using C = ClientPackets;
 
 namespace Client.MirScenes.Dialogs
 {
+    //错误报告吧
     public sealed class ReportDialog : MirImageControl
     {
         MirDropDownBox ReportType;

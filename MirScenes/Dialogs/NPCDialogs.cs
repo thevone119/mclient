@@ -22,6 +22,7 @@ using System.Drawing.Imaging;
 
 namespace Client.MirScenes.Dialogs
 {
+    //NPC对话框，这个要搞脚本之类的哦
     public sealed class NPCDialog : MirImageControl
     {
         public static Regex R = new Regex(@"<(.*?/\@.*?)>");
@@ -1551,7 +1552,7 @@ namespace Client.MirScenes.Dialogs
         }
     }
 
-
+    //锻造窗口
     public sealed class CraftDialog : MirImageControl
     {
         public static UserItem RecipeItem;

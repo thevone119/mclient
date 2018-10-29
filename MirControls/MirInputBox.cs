@@ -5,6 +5,7 @@ using Client.MirGraphics;
 
 namespace Client.MirControls
 {
+    //这个是发给好友的么？
     public sealed class MirInputBox : MirImageControl
     {
         public readonly MirLabel CaptionLabel;

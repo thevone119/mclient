@@ -13,6 +13,7 @@ using C = ClientPackets;
 
 namespace Client.MirScenes.Dialogs
 {
+    //委托
     public sealed class TrustMerchantDialog : MirImageControl
     {
         public static bool UserMode = false;

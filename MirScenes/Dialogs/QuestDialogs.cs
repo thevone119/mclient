@@ -16,6 +16,7 @@ using C = ClientPackets;
 
 namespace Client.MirScenes.Dialogs
 {
+    //任务，哈哈，不要任务最好了
     public sealed class QuestListDialog : MirImageControl
     {
         private readonly MirButton _acceptButton, _finishButton;

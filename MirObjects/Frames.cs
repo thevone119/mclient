@@ -2602,11 +2602,14 @@ namespace Client.MirObjects
     }
 
     
-
+    //动画的帧
     public class Frame
     {
-        public int Start, Count, Skip, EffectStart, EffectCount, EffectSkip;
-        public int Interval, EffectInterval;
+        //每4个一组，开始，总数，跳过，延时
+        public int Start, Count, Skip, Interval;
+        //这4个是特效的，也是每4个一组
+        public int EffectStart, EffectCount, EffectSkip, EffectInterval;
+        //Reverse翻转，Blend混合
         public bool Reverse, Blend;
 
         public int OffSet
@@ -2618,7 +2621,7 @@ namespace Client.MirObjects
         {
             get { return EffectCount + EffectSkip; }
         }
-
+        //比如人物站立 0, 4, 0, 500, 0, 8, 0, 250
         public Frame(int start, int count, int skip, int interval, int effectstart = 0, int effectcount = 0, int effectskip = 0, int effectinterval = 0)
         {
             Start = start;

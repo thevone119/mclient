@@ -258,7 +258,7 @@ namespace Client.MirControls
         {
             nameLabel.Text = (Item.Info.Type == ItemType.Pets && Item.Info.Shape == 26 && Item.Info.Effect != 7) ? "WonderDrug" : Item.Info.FriendlyName;
             nameLabel.Text = nameLabel.Text.Length > 17 ? nameLabel.Text.Substring(0, 17) : nameLabel.Text;
-            nameLabel.ForeColour = GameScene.Scene.GradeNameColor(Item.Info.Grade);
+            nameLabel.ForeColour = Item.Info.getNameColor();
             quantity.Text = Quantity.ToString();
             goldLabel.Text = (Item.GoldPrice * Quantity).ToString("###,###,##0");
             gpLabel.Text = (Item.CreditPrice * Quantity).ToString("###,###,##0");

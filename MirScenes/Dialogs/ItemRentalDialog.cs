@@ -12,6 +12,7 @@ using C = ClientPackets;
 
 namespace Client.MirScenes.Dialogs
 {
+    //物品租借，一次只能租借3个物品
     public sealed class ItemRentalDialog : MirImageControl
     {
         private readonly ItemRow[] _itemRows = new ItemRow[3];
